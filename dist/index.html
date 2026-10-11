@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b2430" />
+  <meta name="description" content="送给苏雨菲的生日回忆冒险。" />
+  <title>沿着回忆找到你 · Jenny 的生日冒险</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="stars" aria-hidden="true"></div>
+
+  <main id="app">
+    <section id="intro" class="screen intro-screen active" aria-labelledby="intro-title">
+      <div class="intro-card">
+        <div class="pet-orbit" aria-hidden="true">
+          <span class="pet pet-cat">🐱</span>
+          <span class="pet pet-dog">🐶</span>
+        </div>
+        <p class="eyebrow">一封来自回忆世界的邀请函</p>
+        <h1 id="intro-title">沿着回忆<br />找到你</h1>
+        <p class="intro-copy">苏雨菲小朋友，有人把七段很重要的回忆藏在了地图里。<br />找到它们，就能打开最后的生日礼物。</p>
+        <label class="name-field">
+          <span>冒险者的名字</span>
+          <input id="player-name" value="Jenny" maxlength="12" autocomplete="off" />
+        </label>
+        <button id="start-button" class="primary-button">开始冒险 <span>→</span></button>
+        <p class="tiny-note">游戏会自动保存在这台设备上</p>
+      </div>
+    </section>
+
+    <section id="game" class="screen game-screen" aria-labelledby="map-title">
+      <header class="game-header">
+        <div>
+          <p class="eyebrow">JENNY'S MEMORY MAP</p>
+          <h2 id="map-title">我们的回忆地图</h2>
+        </div>
+        <button id="journal-button" class="journal-button" aria-label="打开信件收藏">
+          <span>💌</span><b id="letter-count">0 / 7</b>
+        </button>
+      </header>
+
+      <div class="guide-card">
+        <span class="guide-avatar">🐶</span>
+        <div>
+          <b>花生</b>
+          <p id="guide-message">宝宝，先从我们第一次见面的地方出发吧！</p>
+        </div>
+      </div>
+
+      <div class="map-shell">
+        <div class="map-decoration moon">☾</div>
+        <div class="map-decoration cloud cloud-one"></div>
+        <div class="map-decoration cloud cloud-two"></div>
+        <svg class="route" viewBox="0 0 400 1080" preserveAspectRatio="none" aria-hidden="true">
+          <path class="route-shadow" d="M80,100 C300,150 310,245 190,300 C55,360 65,455 215,505 C355,550 330,670 175,700 C45,730 80,850 230,880 C335,905 335,995 270,1040" />
+          <path class="route-line" d="M80,100 C300,150 310,245 190,300 C55,360 65,455 215,505 C355,550 330,670 175,700 C45,730 80,850 230,880 C335,905 335,995 270,1040" />
+        </svg>
+        <div id="map-nodes" class="map-nodes"></div>
+        <div id="player-token" class="player-token" aria-hidden="true"><span>🐱</span></div>
+      </div>
+
+      <footer class="game-footer">
+        <p>10.25 · 写给全世界最幸运的女孩</p>
+        <button id="reset-button" class="text-button">重新开始</button>
+      </footer>
+    </section>
+  </main>
+
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" data-close-modal aria-label="关闭">×</button>
+      <div id="modal-content"></div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
