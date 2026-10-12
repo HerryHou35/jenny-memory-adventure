@@ -11,7 +11,7 @@ const ui = {
 };
 
 const images = {};
-const imagePaths = { jenny: "assets/sprites/jenny-walk-v2.png", herry: "assets/sprites/herry-walk-v2.png", peanut: "assets/sprites/peanut-walk-v2.png", chairBack: "assets/props/cinema-chair-back.png", key: "assets/props/key-yellow.png", film: "assets/props/film-white.png", ringBlue: "assets/props/ring-blue.png", ringGreen: "assets/props/ring-green.png", ringDiamond: "assets/props/ring-diamond.png" };
+const imagePaths = { jenny: "assets/sprites/jenny-walk-v2.png", herry: "assets/sprites/herry-walk-v2.png", peanut: "assets/sprites/peanut-walk-v2.png", chairBack: "assets/props/cinema-chair-back.png", key: "assets/props/key-yellow.png", film: "assets/props/film-white.png", ringBlue: "assets/props/ring-blue.png", ringGreen: "assets/props/ring-green.png", ringDiamond: "assets/props/ring-diamond.png", marketStall: "assets/props/market-stall-blue.png" };
 const save = JSON.parse(localStorage.getItem("jenny-adventure-prototype") || "{}") || {};
 const game = { scene: "projector", stage: save.memoryOne ? 4 : 0, memoryOne: Boolean(save.memoryOne), running: false, loopStarted: false, lastTime: 0, keys: new Set(), dialogueQueue: [], dialogueCallback: null, nearby: null, fade: 0, transition: null };
 const player = { x: 480, y: 410, tx: 480, ty: 410, speed: 185, dir: 0, moving: false, frame: 1 };
@@ -92,10 +92,47 @@ function drawProjector(on){ctx.fillStyle="#172329";ctx.fillRect(430,220,100,62);
 function drawSeats(){for(let x=72;x<890;x+=142){ctx.drawImage(images.chairBack,x,306,88,88);}}
 function drawKey(){ctx.save();ctx.translate(185,375);ctx.rotate(-.2);ctx.shadowColor="rgba(247,201,74,.75)";ctx.shadowBlur=18;ctx.drawImage(images.key,-30,-30,60,60);ctx.restore();}
 function drawPortal(time){const pulse=8+Math.sin(time/220)*5;ctx.fillStyle="rgba(111,225,181,.16)";ctx.fillRect(755-pulse/2,282-pulse/2,120+pulse,170+pulse);ctx.strokeStyle="#7be0ae";ctx.lineWidth=6;ctx.strokeRect(765,292,100,150);ctx.fillStyle="rgba(87,182,210,.35)";ctx.fillRect(771,298,88,138);ctx.fillStyle="#fff2cf";ctx.font="bold 12px sans-serif";ctx.textAlign="center";ctx.fillText("弘大 · 过去",815,475);}
+function drawAdidasSign(restored){
+  ctx.save();
+  ctx.fillStyle=restored?"#eef9f6":"#d8dede";ctx.fillRect(678,18,194,54);
+  ctx.fillStyle="#11181b";
+  [[704,49,12,17],[720,41,12,25],[736,33,12,33]].forEach(([x,y,w,h])=>{ctx.beginPath();ctx.moveTo(x,y+h);ctx.lineTo(x+9,y);ctx.lineTo(x+w+9,y);ctx.lineTo(x+w,y+h);ctx.closePath();ctx.fill();});
+  ctx.font="900 25px Arial, sans-serif";ctx.textAlign="left";ctx.textBaseline="alphabetic";ctx.fillText("adidas",758,55);
+  ctx.strokeStyle=restored?"#8fe7c5":"#76888b";ctx.lineWidth=3;ctx.strokeRect(678,18,194,54);ctx.restore();
+}
+function drawReflectedSprite(image,entity,width,height,mirror){
+  const fw=image.width/4,fh=image.height/4,sx=entity.frame*fw,sy=entity.dir*fh;
+  const rx=mirror.x+mirror.w/2-(entity.x-770)*.63;
+  const ry=mirror.y+mirror.h-14+(entity.y-390)*.12;
+  ctx.save();ctx.translate(rx,0);ctx.scale(-1,1);ctx.globalAlpha=.57;
+  ctx.drawImage(image,sx,sy,fw,fh,-width/2,ry-height,width,height);ctx.restore();
+}
+function drawStoreMirror(restored){
+  const mirror={x:665,y:82,w:220,h:238};
+  ctx.save();ctx.shadowColor="rgba(5,12,16,.45)";ctx.shadowBlur=14;ctx.fillStyle="#131b1f";ctx.fillRect(mirror.x-9,mirror.y-9,mirror.w+18,mirror.h+18);ctx.restore();
+  const glass=ctx.createLinearGradient(mirror.x,mirror.y,mirror.x+mirror.w,mirror.y+mirror.h);glass.addColorStop(0,restored?"#8bb7bd":"#697b7f");glass.addColorStop(.48,restored?"#d2e2da":"#9ca8a5");glass.addColorStop(1,restored?"#6b989e":"#5a6a6e");ctx.fillStyle=glass;ctx.fillRect(mirror.x,mirror.y,mirror.w,mirror.h);
+  ctx.save();ctx.beginPath();ctx.rect(mirror.x+5,mirror.y+5,mirror.w-10,mirror.h-10);ctx.clip();
+  ctx.fillStyle="rgba(20,35,40,.18)";ctx.fillRect(mirror.x,mirror.y+154,mirror.w,84);
+  ctx.strokeStyle="rgba(255,255,255,.16)";ctx.lineWidth=1;for(let y=mirror.y+168;y<mirror.y+238;y+=17){ctx.beginPath();ctx.moveTo(mirror.x,y);ctx.lineTo(mirror.x+mirror.w,y);ctx.stroke();}
+  if(game.stage>=11)drawReflectedSprite(images.herry,herry,72,118,mirror);
+  drawReflectedSprite(images.peanut,peanut,52,68,mirror);drawReflectedSprite(images.jenny,player,64,111,mirror);
+  const sheen=ctx.createLinearGradient(mirror.x,mirror.y,mirror.x+mirror.w,mirror.y);sheen.addColorStop(0,"rgba(255,255,255,.42)");sheen.addColorStop(.2,"rgba(255,255,255,.06)");sheen.addColorStop(.68,"rgba(255,255,255,0)");sheen.addColorStop(1,"rgba(255,255,255,.18)");ctx.fillStyle=sheen;ctx.fillRect(mirror.x,mirror.y,mirror.w,mirror.h);ctx.restore();
+  ctx.strokeStyle=restored?"#d8fff0":"#d7ddd8";ctx.lineWidth=7;ctx.strokeRect(mirror.x,mirror.y,mirror.w,mirror.h);
+  ctx.fillStyle="#182126";ctx.fillRect(mirror.x-2,mirror.y+mirror.h+7,mirror.w+4,10);
+}
+function drawRingStall(restored){
+  ctx.save();ctx.shadowColor="rgba(7,16,20,.38)";ctx.shadowBlur=12;ctx.drawImage(images.marketStall,53,117,205,320);ctx.restore();
+  ctx.fillStyle=restored?"#183f50":"#29383d";ctx.fillRect(70,163,170,35);ctx.strokeStyle="#d5b06c";ctx.lineWidth=3;ctx.strokeRect(70,163,170,35);
+  ctx.fillStyle="#fff3d3";ctx.font="900 15px Arial, sans-serif";ctx.textAlign="center";ctx.fillText("RING  ·  반지",155,186);
+  ctx.fillStyle="rgba(255,244,210,.16)";ctx.fillRect(70,210,170,89);
+  [images.ringBlue,images.ringGreen,images.ringDiamond].forEach((ring,i)=>{const x=89+i*55;ctx.fillStyle="#f5e7c6";ctx.fillRect(x-5,260,44,8);ctx.drawImage(ring,x,218,34,34);});
+  ctx.fillStyle="#6c4024";ctx.fillRect(64,300,182,20);ctx.fillStyle="#b97b42";ctx.fillRect(72,303,166,10);
+}
 function drawHongdae(time){
   const restored=game.stage>=12;ctx.fillStyle=restored?"#163746":"#25333a";ctx.fillRect(0,0,960,540);ctx.fillStyle=restored?"#31596a":"#3d484c";ctx.fillRect(0,0,960,270);ctx.fillStyle=restored?"#455a61":"#444b4d";ctx.fillRect(0,270,960,270);
-  ctx.fillStyle=restored?"#d9eff0":"#8a9595";ctx.fillRect(675,70,200,235);ctx.fillStyle=restored?"#80b6c3":"#748184";ctx.fillRect(690,85,170,205);ctx.strokeStyle="#f2ead7";ctx.lineWidth=7;ctx.strokeRect(675,70,200,235);
-  ctx.fillStyle=restored?"#25576a":"#414d51";ctx.fillRect(38,155,240,165);ctx.fillStyle="#17282e";ctx.fillRect(55,175,205,120);[images.ringBlue,images.ringGreen,images.ringDiamond].forEach((ring,i)=>ctx.drawImage(ring,82+i*58,211,46,46));ctx.fillStyle="#fff2cf";ctx.font="bold 14px sans-serif";ctx.textAlign="center";ctx.fillText("RING",158,193);
+  ctx.fillStyle=restored?"#254b58":"#344247";for(let x=0;x<960;x+=120)ctx.fillRect(x+2,0,116,270);
+  for(let y=285;y<540;y+=34){ctx.strokeStyle=restored?"#344e54":"#383f42";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(960,y);ctx.stroke();}for(let x=-170;x<1140;x+=95){ctx.beginPath();ctx.moveTo(480,270);ctx.lineTo(x,540);ctx.stroke();}
+  drawAdidasSign(restored);drawStoreMirror(restored);drawRingStall(restored);
   if(game.stage>=11){herry.y=game.stage===11?355-Math.sin(time/120)*3:355;drawSprite(images.herry,herry,80,130);} if(game.stage===12) drawFilm(time);ctx.fillStyle="rgba(255,255,255,.5)";ctx.font="12px sans-serif";ctx.textAlign="left";ctx.fillText("HONGDAE · SEOUL",32,40);
 }
 function drawFilm(time){ctx.save();ctx.translate(480,335+Math.sin(time/250)*7);ctx.fillStyle="#f7c94a";ctx.fillRect(-30,-30,60,60);ctx.shadowColor="rgba(247,201,74,.75)";ctx.shadowBlur=18;ctx.drawImage(images.film,-23,-23,46,46);ctx.restore();}

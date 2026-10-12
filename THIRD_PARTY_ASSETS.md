@@ -20,5 +20,5 @@ The game bundles a small number of permissively licensed pixel-art props. They a
 
 - Source mirror: https://github.com/shorepine/kenney
 - Pinned commit: `3694c6879e487c108f55677be7dd2ca75b07cc3b`
-- Files used: `keyYellow.png`, `film.png`
+- Files used: `keyYellow.png`, `film.png`, `2d/Block Pack/Retina/market_stallBlue.png`
 - License: CC0 1.0 / public domain, as documented by the repository.

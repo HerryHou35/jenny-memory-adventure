@@ -6,11 +6,13 @@ Source: <https://github.com/crawl/crawl> at commit `da980d1564a996e793f0bb667d9d
 
 The upstream `crawl-ref/source/rltiles/license.txt` identifies the relevant RLTiles graphics as public domain.
 
-## Kenney key and film icon
+## Kenney key, film icon, and market stall
 
 Source mirror: <https://github.com/shorepine/kenney> at commit `3694c6879e487c108f55677be7dd2ca75b07cc3b`.
 
 Released under CC0 1.0 / public domain.
+
+The market stall is sourced from `2d/Block Pack/Retina/market_stallBlue.png` in the same pinned repository revision.
 
 ## Pixel Agents cinema chairs
 
