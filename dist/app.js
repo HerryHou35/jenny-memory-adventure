@@ -13,7 +13,7 @@ const ui = {
 const images = {};
 const imagePaths = { jenny: "assets/sprites/jenny-walk-v2.png", herry: "assets/sprites/herry-walk-v2.png", peanut: "assets/sprites/peanut-walk-v2.png", chairBack: "assets/props/cinema-chair-back.png", key: "assets/props/key-yellow.png", film: "assets/props/film-white.png", ringBlue: "assets/props/ring-blue.png", ringGreen: "assets/props/ring-green.png", ringDiamond: "assets/props/ring-diamond.png", marketStall: "assets/props/market-stall-blue.png" };
 const save = JSON.parse(localStorage.getItem("jenny-adventure-prototype") || "{}") || {};
-const game = { scene: "projector", stage: save.memoryOne ? 4 : 0, memoryOne: Boolean(save.memoryOne), running: false, loopStarted: false, lastTime: 0, keys: new Set(), dialogueQueue: [], dialogueCallback: null, nearby: null, fade: 0, transition: null };
+const game = { scene: "projector", stage: save.memoryOne ? 4 : 0, memoryOne: Boolean(save.memoryOne), running: false, loopStarted: false, lastTime: 0, keys: new Set(), dialogueQueue: [], dialogueCallback: null, nearby: null, fade: 0, transition: null, photoOpen: false, photoRevealAt: 0, cameraFlashUntil: 0, soundOn: true };
 const player = { x: 480, y: 410, tx: 480, ty: 410, speed: 185, dir: 0, moving: false, frame: 1 };
 const peanut = { x: 420, y: 430, dir: 0, moving: false, frame: 1, trail: [] };
 const herry = { x: 730, y: 355, dir: 0, frame: 1, tiptoe: 0 };
@@ -23,7 +23,7 @@ function persist() { localStorage.setItem("jenny-adventure-prototype", JSON.stri
 
 function startGame(continueSaved = false) {
   if (!continueSaved) { localStorage.removeItem("jenny-adventure-prototype"); game.memoryOne = false; game.stage = 0; }
-  game.dialogueQueue = []; game.dialogueCallback = null; game.nearby = null; game.fade = 0; game.transition = null; ui.dialogue.hidden = true; ui.ringPanel.hidden = true; ui.letterPanel.hidden = true; ui.action.hidden = true;
+  game.dialogueQueue = []; game.dialogueCallback = null; game.nearby = null; game.fade = 0; game.transition = null; game.photoOpen = false; game.cameraFlashUntil = 0; ui.dialogue.hidden = true; ui.ringPanel.hidden = true; ui.letterPanel.hidden = true; ui.action.hidden = true;
   ui.title.classList.remove("active"); ui.play.classList.add("active"); game.running = true;
   if (continueSaved && game.memoryOne) { game.stage = 4; setProjectorRoom(true); say("花生", "第一张胶片已经回来了。剩下的六扇光门，还在等我们。", "🐶"); }
   else { setProjectorRoom(false); sayMany([["花生", "Jenny！你终于来了。我本来想给你放一部很重要的电影……", "🐶"],["花生", "可放映机不动了，胶片也少了七格。先在房间里找找能让它转起来的东西吧。", "🐶"]]); }
@@ -48,11 +48,11 @@ function advanceDialogue() { if (ui.dialogue.hidden) return; const callback = ga
 
 function worldPoint(event) { const rect = canvas.getBoundingClientRect(); return { x: (event.clientX - rect.left) * canvas.width / rect.width, y: (event.clientY - rect.top) * canvas.height / rect.height }; }
 function setTarget(x, y) { player.tx = Math.max(55, Math.min(905, x)); player.ty = Math.max(285, Math.min(480, y)); }
-function onPointer(event) { if (!ui.dialogue.hidden || !ui.ringPanel.hidden || !ui.letterPanel.hidden) return; const p = worldPoint(event); setTarget(p.x, p.y); const rect = canvas.getBoundingClientRect(); ui.tapMarker.style.left = `${event.clientX - rect.left}px`; ui.tapMarker.style.top = `${event.clientY - rect.top}px`; ui.tapMarker.style.display = "block"; ui.tapMarker.style.animation = "none"; void ui.tapMarker.offsetWidth; ui.tapMarker.style.animation = "marker .55s ease-out forwards"; }
+function onPointer(event) { if(game.photoOpen){closeMirrorPhoto();return;} if (!ui.dialogue.hidden || !ui.ringPanel.hidden || !ui.letterPanel.hidden) return; const p = worldPoint(event); setTarget(p.x, p.y); const rect = canvas.getBoundingClientRect(); ui.tapMarker.style.left = `${event.clientX - rect.left}px`; ui.tapMarker.style.top = `${event.clientY - rect.top}px`; ui.tapMarker.style.display = "block"; ui.tapMarker.style.animation = "none"; void ui.tapMarker.offsetWidth; ui.tapMarker.style.animation = "marker .55s ease-out forwards"; }
 function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
 
 function update(dt, time) {
-  if (!game.running || !ui.dialogue.hidden || !ui.ringPanel.hidden || !ui.letterPanel.hidden) return;
+  if (!game.running || game.photoOpen || !ui.dialogue.hidden || !ui.ringPanel.hidden || !ui.letterPanel.hidden) return;
   let dx = 0, dy = 0;
   if (game.keys.has("ArrowLeft") || game.keys.has("a")) dx -= 1; if (game.keys.has("ArrowRight") || game.keys.has("d")) dx += 1; if (game.keys.has("ArrowUp") || game.keys.has("w")) dy -= 1; if (game.keys.has("ArrowDown") || game.keys.has("s")) dy += 1;
   if (dx || dy) { const length = Math.hypot(dx,dy); dx /= length; dy /= length; player.tx = player.x + dx * 24; player.ty = player.y + dy * 24; }
@@ -76,7 +76,15 @@ function updateNearby() {
 
 function collectKey() { game.stage = 1; updateObjective(); sayMany([["Jenny", "找到一枚旧发条。", "👧"],["花生", "它和放映机侧面的缺口好像正合适！", "🐶"]]); }
 function startProjector() { game.stage = 2; updateObjective(); sayMany([["花生", "转起来了！房间里出现了一扇通往过去的光门。", "🐶"],["花生", "别担心，我会一直跟着你。", "🐶"]]); }
-function mirrorMoment() { game.stage = 11; herry.tiptoe = 1; updateObjective(); sayMany([["Herry", "听说你最早知道我的外号，是光云大学小姚明。", "👦"],["花生", "所以他为什么还要偷偷踮脚？", "🐶"],["Jenny", "明明只差十厘米。", "👧"]], () => { herry.tiptoe = 0; }); }
+function playShutter(){
+  if(!game.soundOn)return;
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;if(!AudioCtx)return;const audio=playShutter.audio||(playShutter.audio=new AudioCtx());if(audio.state==="suspended")audio.resume();
+  const now=audio.currentTime,noise=audio.createBuffer(1,Math.floor(audio.sampleRate*.075),audio.sampleRate),data=noise.getChannelData(0);for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(1-i/data.length);
+  const source=audio.createBufferSource(),filter=audio.createBiquadFilter(),gain=audio.createGain();source.buffer=noise;filter.type="bandpass";filter.frequency.value=1650;filter.Q.value=.7;gain.gain.setValueAtTime(.55,now);gain.gain.exponentialRampToValueAtTime(.01,now+.075);source.connect(filter).connect(gain).connect(audio.destination);source.start(now);
+  [0,.095].forEach((delay,i)=>{const osc=audio.createOscillator(),click=audio.createGain();osc.type="square";osc.frequency.setValueAtTime(i?105:145,now+delay);click.gain.setValueAtTime(.28,now+delay);click.gain.exponentialRampToValueAtTime(.01,now+delay+.035);osc.connect(click).connect(audio.destination);osc.start(now+delay);osc.stop(now+delay+.04);});
+}
+function mirrorMoment(){game.stage=11;herry.tiptoe=1;updateObjective();game.photoOpen=true;game.photoRevealAt=performance.now()+230;game.cameraFlashUntil=performance.now()+310;ui.action.hidden=true;playShutter();}
+function closeMirrorPhoto(){if(performance.now()<game.photoRevealAt)return;game.photoOpen=false;sayMany([["Herry","听说你最早知道我的外号，是光云大学小姚明。","👦"],["花生","所以他为什么还要偷偷踮脚？","🐶"],["Jenny","明明只差十厘米。","👧"]],()=>{herry.tiptoe=0;});}
 function chooseRing(name) { ui.ringPanel.hidden = true; game.stage = 12; updateObjective(); sayMany([["Jenny", `就这枚${name}吧。`, "👧"],["Herry", "好。你挑的，我会一直留着。", "👦"],["花生", "镜子里的颜色回来了！还有什么东西掉在了地上。", "🐶"]]); }
 function collectFilm() { game.stage = 13; game.memoryOne = true; persist(); updateObjective(); ui.letterPanel.hidden = false; }
 function transitionTo(callback) { game.transition = callback; game.fade = 0.01; }
@@ -128,6 +136,14 @@ function drawRingStall(restored){
   [images.ringBlue,images.ringGreen,images.ringDiamond].forEach((ring,i)=>{const x=89+i*55;ctx.fillStyle="#f5e7c6";ctx.fillRect(x-5,260,44,8);ctx.drawImage(ring,x,218,34,34);});
   ctx.fillStyle="#6c4024";ctx.fillRect(64,300,182,20);ctx.fillStyle="#b97b42";ctx.fillRect(72,303,166,10);
 }
+function drawMirrorPhoto(time){
+  if(time<game.photoRevealAt)return;
+  const enter=Math.min(1,(time-game.photoRevealAt)/260),scale=.82+enter*.18;ctx.save();ctx.fillStyle="rgba(3,12,17,.72)";ctx.fillRect(0,0,960,540);ctx.translate(480,270);ctx.scale(scale,scale);ctx.rotate((1-enter)*-.035);ctx.shadowColor="rgba(0,0,0,.5)";ctx.shadowBlur=24;ctx.fillStyle="#fffaf0";ctx.fillRect(-294,-214,588,428);ctx.shadowBlur=0;
+  ctx.save();ctx.beginPath();ctx.rect(-264,-184,528,286);ctx.clip();const photo=ctx.createLinearGradient(-264,-184,264,102);photo.addColorStop(0,"#7196a0");photo.addColorStop(1,"#c6d4cd");ctx.fillStyle=photo;ctx.fillRect(-264,-184,528,286);ctx.fillStyle="#52666a";ctx.fillRect(-264,36,528,66);ctx.strokeStyle="rgba(255,255,255,.2)";for(let y=48;y<102;y+=16){ctx.beginPath();ctx.moveTo(-264,y);ctx.lineTo(264,y);ctx.stroke();}
+  ctx.fillStyle="#f1f4ee";ctx.fillRect(62,-166,178,49);ctx.fillStyle="#172024";[[79,-128,10,17],[94,-136,10,25],[109,-144,10,33]].forEach(([x,y,w,h])=>{ctx.beginPath();ctx.moveTo(x,y+h);ctx.lineTo(x+8,y);ctx.lineTo(x+w+8,y);ctx.lineTo(x+w,y+h);ctx.closePath();ctx.fill();});ctx.font="900 22px Arial";ctx.textAlign="left";ctx.fillText("adidas",130,-128);
+  drawSprite(images.herry,{x:-54,y:91,frame:1,dir:0},88,150);drawSprite(images.jenny,{x:47,y:91,frame:1,dir:0},82,142);drawSprite(images.peanut,{x:128,y:94,frame:1,dir:0},61,82);ctx.restore();
+  ctx.fillStyle="#19333d";ctx.textAlign="center";ctx.font="900 25px Arial, sans-serif";ctx.fillText("弘大 · 镜子前的合影",0,153);ctx.fillStyle="#6e7d7e";ctx.font="15px Arial, sans-serif";ctx.fillText("HONGDAE, SEOUL  ·  点击照片继续",0,184);ctx.restore();
+}
 function drawHongdae(time){
   const restored=game.stage>=12;ctx.fillStyle=restored?"#163746":"#25333a";ctx.fillRect(0,0,960,540);ctx.fillStyle=restored?"#31596a":"#3d484c";ctx.fillRect(0,0,960,270);ctx.fillStyle=restored?"#455a61":"#444b4d";ctx.fillRect(0,270,960,270);
   ctx.fillStyle=restored?"#254b58":"#344247";for(let x=0;x<960;x+=120)ctx.fillRect(x+2,0,116,270);
@@ -136,10 +152,10 @@ function drawHongdae(time){
   if(game.stage>=11){herry.y=game.stage===11?355-Math.sin(time/120)*3:355;drawSprite(images.herry,herry,80,130);} if(game.stage===12) drawFilm(time);ctx.fillStyle="rgba(255,255,255,.5)";ctx.font="12px sans-serif";ctx.textAlign="left";ctx.fillText("HONGDAE · SEOUL",32,40);
 }
 function drawFilm(time){ctx.save();ctx.translate(480,335+Math.sin(time/250)*7);ctx.fillStyle="#f7c94a";ctx.fillRect(-30,-30,60,60);ctx.shadowColor="rgba(247,201,74,.75)";ctx.shadowBlur=18;ctx.drawImage(images.film,-23,-23,46,46);ctx.restore();}
-function draw(time) { ctx.clearRect(0,0,960,540); if(game.scene==="projector") drawProjectorRoom(time); else drawHongdae(time); [{type:"peanut",e:peanut,w:60,h:78},{type:"jenny",e:player,w:70,h:122}].sort((a,b)=>a.e.y-b.e.y).forEach(a=>drawSprite(images[a.type],a.e,a.w,a.h)); if(game.fade>0){ctx.fillStyle=`rgba(255,248,220,${Math.min(1,game.fade)})`;ctx.fillRect(0,0,960,540);} }
+function draw(time) { ctx.clearRect(0,0,960,540); if(game.scene==="projector") drawProjectorRoom(time); else drawHongdae(time); [{type:"peanut",e:peanut,w:60,h:78},{type:"jenny",e:player,w:70,h:122}].sort((a,b)=>a.e.y-b.e.y).forEach(a=>drawSprite(images[a.type],a.e,a.w,a.h)); if(game.photoOpen)drawMirrorPhoto(time);if(time<game.cameraFlashUntil){const left=game.cameraFlashUntil-time;ctx.fillStyle=`rgba(255,255,255,${Math.min(1,left/150)})`;ctx.fillRect(0,0,960,540);} if(game.fade>0){ctx.fillStyle=`rgba(255,248,220,${Math.min(1,game.fade)})`;ctx.fillRect(0,0,960,540);} }
 function loop(time) { const dt=Math.min(.034,(time-game.lastTime)/1000||0);game.lastTime=time;update(dt,time);if(game.fade>0){if(game.transition){game.fade+=dt*2.5;if(game.fade>=1){const cb=game.transition;game.transition=null;cb();game.fade=.99;}}else{game.fade-=dt*3;if(game.fade<=0)game.fade=0;}}draw(time);requestAnimationFrame(loop); }
 
 ui.start.addEventListener("click",()=>startGame(false));ui.continue.addEventListener("click",()=>startGame(true));ui.restart.addEventListener("click",()=>startGame(false));canvas.addEventListener("pointerdown",onPointer);ui.action.addEventListener("click",()=>game.nearby?.action());ui.dialogue.addEventListener("click",advanceDialogue);
-document.addEventListener("keydown",e=>{if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].includes(e.key)){game.keys.add(e.key);e.preventDefault();}if((e.key===" "||e.key==="Enter")&&game.nearby&&!ui.action.hidden)game.nearby.action();});document.addEventListener("keyup",e=>game.keys.delete(e.key));
-document.querySelectorAll("[data-ring]").forEach(button=>button.addEventListener("click",()=>chooseRing(button.dataset.ring)));document.querySelector("#return-button").addEventListener("click",()=>{ui.letterPanel.hidden=true;game.stage=4;transitionTo(()=>setProjectorRoom(true));});document.querySelector("#sound-button").addEventListener("click",e=>{e.currentTarget.textContent=e.currentTarget.textContent==="♪"?"×":"♪";});
+document.addEventListener("keydown",e=>{if(game.photoOpen&&(e.key===" "||e.key==="Enter")){closeMirrorPhoto();e.preventDefault();return;}if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].includes(e.key)){game.keys.add(e.key);e.preventDefault();}if((e.key===" "||e.key==="Enter")&&game.nearby&&!ui.action.hidden)game.nearby.action();});document.addEventListener("keyup",e=>game.keys.delete(e.key));
+document.querySelectorAll("[data-ring]").forEach(button=>button.addEventListener("click",()=>chooseRing(button.dataset.ring)));document.querySelector("#return-button").addEventListener("click",()=>{ui.letterPanel.hidden=true;game.stage=4;transitionTo(()=>setProjectorRoom(true));});document.querySelector("#sound-button").addEventListener("click",e=>{game.soundOn=!game.soundOn;e.currentTarget.textContent=game.soundOn?"♪":"×";});
 loadImages().then(()=>{ui.loading.style.display="none"; ui.continue.hidden=!game.memoryOne; ui.start.textContent=game.memoryOne?"从头重玩":"进入放映室";}).catch(()=>{ui.loading.textContent="角色素材加载失败，请刷新重试。";});
