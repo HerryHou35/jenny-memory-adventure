@@ -20,7 +20,10 @@
           <span class="heart">♥</span>
           <span class="mini-sprite peanut-mini"></span>
         </div>
-        <button id="start-button" class="primary">进入放映室</button>
+        <div class="start-actions">
+          <button id="start-button" class="primary">进入放映室</button>
+          <button id="continue-button" class="secondary" hidden>继续上次进度</button>
+        </div>
         <small>点击地面移动 · 靠近物品后进行互动</small>
       </div>
     </section>
@@ -31,7 +34,10 @@
           <p id="scene-label" class="scene-label">序章 · 放映室</p>
           <p id="objective" class="objective">找到让放映机重新转动的东西</p>
         </div>
-        <button id="sound-button" class="icon-button" aria-label="声音开关">♪</button>
+        <div class="hud-actions">
+          <button id="restart-button" class="text-button">↻ 重新开始</button>
+          <button id="sound-button" class="icon-button" aria-label="声音开关">♪</button>
+        </div>
       </header>
 
       <div id="canvas-wrap">
@@ -59,16 +65,16 @@
       <h2>替他挑一枚戒指</h2>
       <p>没有正确答案。那天重要的不是挑中了哪一枚，而是你认真替他看了很久。</p>
       <div class="ring-options">
-        <button data-ring="星星"><span>✦</span>星星</button>
-        <button data-ring="月亮"><span>☾</span>月亮</button>
-        <button data-ring="圆环"><span>○</span>圆环</button>
+        <button data-ring="蓝宝石戒指"><img src="assets/props/ring-blue.png" alt="蓝宝石戒指" /><b>蓝宝石</b><small>像第一次见面时的首尔夜色</small></button>
+        <button data-ring="翡翠戒指"><img src="assets/props/ring-green.png" alt="翡翠戒指" /><b>翡翠</b><small>是 Jenny 喜欢的绿色</small></button>
+        <button data-ring="钻石戒指"><img src="assets/props/ring-diamond.png" alt="钻石戒指" /><b>钻石</b><small>小小一枚，却很认真</small></button>
       </div>
     </div>
   </section>
 
   <section id="letter-panel" class="modal" hidden aria-label="第一张回忆胶片">
     <div class="modal-card letter-card">
-      <div class="film-icon">▣</div>
+      <div class="film-icon"><img src="assets/props/film-white.png" alt="回忆胶片" /></div>
       <p class="eyebrow">MEMORY 01 RESTORED</p>
       <h2>镜子里的第一次</h2>
       <p class="letter-copy">宝宝，第一次见你时，我已经在镜子里偷偷练习，怎样站在你身边。后来我才知道，那天真正被挑中的不是戒指，是我。</p>

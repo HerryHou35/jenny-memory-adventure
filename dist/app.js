@@ -3,7 +3,7 @@ const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = false;
 
 const ui = {
-  title: document.querySelector("#title-screen"), play: document.querySelector("#play-screen"), start: document.querySelector("#start-button"),
+  title: document.querySelector("#title-screen"), play: document.querySelector("#play-screen"), start: document.querySelector("#start-button"), continue: document.querySelector("#continue-button"), restart: document.querySelector("#restart-button"),
   loading: document.querySelector("#loading"), objective: document.querySelector("#objective"), scene: document.querySelector("#scene-label"),
   action: document.querySelector("#action-button"), dialogue: document.querySelector("#dialogue"), speaker: document.querySelector("#speaker"),
   avatar: document.querySelector("#speaker-avatar"), dialogueText: document.querySelector("#dialogue-text"), tapMarker: document.querySelector("#tap-marker"),
@@ -11,9 +11,9 @@ const ui = {
 };
 
 const images = {};
-const imagePaths = { jenny: "assets/sprites/jenny-walk-v2.png", herry: "assets/sprites/herry-walk-v2.png", peanut: "assets/sprites/peanut-walk-v2.png" };
+const imagePaths = { jenny: "assets/sprites/jenny-walk-v2.png", herry: "assets/sprites/herry-walk-v2.png", peanut: "assets/sprites/peanut-walk-v2.png", chairBack: "assets/props/cinema-chair-back.png", key: "assets/props/key-yellow.png", film: "assets/props/film-white.png", ringBlue: "assets/props/ring-blue.png", ringGreen: "assets/props/ring-green.png", ringDiamond: "assets/props/ring-diamond.png" };
 const save = JSON.parse(localStorage.getItem("jenny-adventure-prototype") || "{}") || {};
-const game = { scene: "projector", stage: save.memoryOne ? 4 : 0, memoryOne: Boolean(save.memoryOne), running: false, lastTime: 0, keys: new Set(), dialogueQueue: [], dialogueCallback: null, nearby: null, fade: 0, transition: null };
+const game = { scene: "projector", stage: save.memoryOne ? 4 : 0, memoryOne: Boolean(save.memoryOne), running: false, loopStarted: false, lastTime: 0, keys: new Set(), dialogueQueue: [], dialogueCallback: null, nearby: null, fade: 0, transition: null };
 const player = { x: 480, y: 410, tx: 480, ty: 410, speed: 185, dir: 0, moving: false, frame: 1 };
 const peanut = { x: 420, y: 430, dir: 0, moving: false, frame: 1, trail: [] };
 const herry = { x: 730, y: 355, dir: 0, frame: 1, tiptoe: 0 };
@@ -21,11 +21,13 @@ const herry = { x: 730, y: 355, dir: 0, frame: 1, tiptoe: 0 };
 function loadImages() { return Promise.all(Object.entries(imagePaths).map(([key, src]) => new Promise((resolve, reject) => { const image = new Image(); image.onload = () => { images[key] = image; resolve(); }; image.onerror = reject; image.src = src; }))); }
 function persist() { localStorage.setItem("jenny-adventure-prototype", JSON.stringify({ memoryOne: game.memoryOne })); }
 
-function startGame() {
+function startGame(continueSaved = false) {
+  if (!continueSaved) { localStorage.removeItem("jenny-adventure-prototype"); game.memoryOne = false; game.stage = 0; }
+  game.dialogueQueue = []; game.dialogueCallback = null; game.nearby = null; game.fade = 0; game.transition = null; ui.dialogue.hidden = true; ui.ringPanel.hidden = true; ui.letterPanel.hidden = true; ui.action.hidden = true;
   ui.title.classList.remove("active"); ui.play.classList.add("active"); game.running = true;
-  if (game.memoryOne) { game.stage = 4; setProjectorRoom(true); say("花生", "第一张胶片已经回来了。剩下的六扇光门，还在等我们。", "🐶"); }
+  if (continueSaved && game.memoryOne) { game.stage = 4; setProjectorRoom(true); say("花生", "第一张胶片已经回来了。剩下的六扇光门，还在等我们。", "🐶"); }
   else { setProjectorRoom(false); sayMany([["花生", "Jenny！你终于来了。我本来想给你放一部很重要的电影……", "🐶"],["花生", "可放映机不动了，胶片也少了七格。先在房间里找找能让它转起来的东西吧。", "🐶"]]); }
-  requestAnimationFrame(loop);
+  if (!game.loopStarted) { game.loopStarted = true; requestAnimationFrame(loop); }
 }
 
 function seedPeanutTrail() { peanut.trail = Array.from({ length: 16 }, (_, index) => ({ x: peanut.x + (player.x - peanut.x) * index / 15, y: peanut.y + (player.y - peanut.y) * index / 15 })); }
@@ -87,20 +89,20 @@ function drawProjectorRoom(time) {
   drawProjector(restored); drawSeats(); if(game.stage===0) drawKey(); if(game.stage===2) drawPortal(time); if(game.stage>=4){ctx.fillStyle="#122a31";ctx.fillRect(760,302,110,130);ctx.strokeStyle="#3c565b";ctx.strokeRect(760,302,110,130);}
 }
 function drawProjector(on){ctx.fillStyle="#172329";ctx.fillRect(430,220,100,62);ctx.fillStyle="#34474b";ctx.fillRect(448,202,64,28);ctx.fillStyle=on?"#f7c94a":"#6a7777";ctx.beginPath();ctx.arc(480,234,16,0,Math.PI*2);ctx.fill();if(on){ctx.strokeStyle="#f7c94a";ctx.lineWidth=4;ctx.beginPath();ctx.arc(455,215,14,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(505,215,14,0,Math.PI*2);ctx.stroke();}}
-function drawSeats(){for(let x=80;x<880;x+=145){ctx.fillStyle="#132a31";ctx.fillRect(x,315,90,54);ctx.fillStyle="#0b2027";ctx.fillRect(x+8,360,10,34);ctx.fillRect(x+72,360,10,34);}}
-function drawKey(){ctx.save();ctx.translate(185,375);ctx.rotate(-.25);ctx.strokeStyle="#f7c94a";ctx.lineWidth=6;ctx.beginPath();ctx.arc(0,0,14,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(13,7);ctx.lineTo(38,25);ctx.lineTo(48,15);ctx.moveTo(38,25);ctx.lineTo(30,34);ctx.stroke();ctx.restore();}
+function drawSeats(){for(let x=72;x<890;x+=142){ctx.drawImage(images.chairBack,x,306,88,88);}}
+function drawKey(){ctx.save();ctx.translate(185,375);ctx.rotate(-.2);ctx.shadowColor="rgba(247,201,74,.75)";ctx.shadowBlur=18;ctx.drawImage(images.key,-30,-30,60,60);ctx.restore();}
 function drawPortal(time){const pulse=8+Math.sin(time/220)*5;ctx.fillStyle="rgba(111,225,181,.16)";ctx.fillRect(755-pulse/2,282-pulse/2,120+pulse,170+pulse);ctx.strokeStyle="#7be0ae";ctx.lineWidth=6;ctx.strokeRect(765,292,100,150);ctx.fillStyle="rgba(87,182,210,.35)";ctx.fillRect(771,298,88,138);ctx.fillStyle="#fff2cf";ctx.font="bold 12px sans-serif";ctx.textAlign="center";ctx.fillText("弘大 · 过去",815,475);}
 function drawHongdae(time){
   const restored=game.stage>=12;ctx.fillStyle=restored?"#163746":"#25333a";ctx.fillRect(0,0,960,540);ctx.fillStyle=restored?"#31596a":"#3d484c";ctx.fillRect(0,0,960,270);ctx.fillStyle=restored?"#455a61":"#444b4d";ctx.fillRect(0,270,960,270);
   ctx.fillStyle=restored?"#d9eff0":"#8a9595";ctx.fillRect(675,70,200,235);ctx.fillStyle=restored?"#80b6c3":"#748184";ctx.fillRect(690,85,170,205);ctx.strokeStyle="#f2ead7";ctx.lineWidth=7;ctx.strokeRect(675,70,200,235);
-  ctx.fillStyle=restored?"#25576a":"#414d51";ctx.fillRect(38,155,240,165);ctx.fillStyle="#17282e";ctx.fillRect(55,175,205,120);for(let i=0;i<3;i++){ctx.fillStyle=["#e8c45f","#cdd9db","#e0a08d"][i];ctx.beginPath();ctx.arc(105+i*58,235,14,0,Math.PI*2);ctx.fill();}ctx.fillStyle="#fff2cf";ctx.font="bold 14px sans-serif";ctx.textAlign="center";ctx.fillText("RING",158,193);
+  ctx.fillStyle=restored?"#25576a":"#414d51";ctx.fillRect(38,155,240,165);ctx.fillStyle="#17282e";ctx.fillRect(55,175,205,120);[images.ringBlue,images.ringGreen,images.ringDiamond].forEach((ring,i)=>ctx.drawImage(ring,82+i*58,211,46,46));ctx.fillStyle="#fff2cf";ctx.font="bold 14px sans-serif";ctx.textAlign="center";ctx.fillText("RING",158,193);
   if(game.stage>=11){herry.y=game.stage===11?355-Math.sin(time/120)*3:355;drawSprite(images.herry,herry,80,130);} if(game.stage===12) drawFilm(time);ctx.fillStyle="rgba(255,255,255,.5)";ctx.font="12px sans-serif";ctx.textAlign="left";ctx.fillText("HONGDAE · SEOUL",32,40);
 }
-function drawFilm(time){ctx.save();ctx.translate(480,335+Math.sin(time/250)*7);ctx.fillStyle="#f7c94a";ctx.fillRect(-22,-16,44,32);ctx.fillStyle="#1d3540";for(let x=-17;x<=12;x+=10){ctx.fillRect(x,-12,6,6);ctx.fillRect(x,6,6,6);}ctx.fillRect(-8,-7,16,14);ctx.restore();}
+function drawFilm(time){ctx.save();ctx.translate(480,335+Math.sin(time/250)*7);ctx.fillStyle="#f7c94a";ctx.fillRect(-30,-30,60,60);ctx.shadowColor="rgba(247,201,74,.75)";ctx.shadowBlur=18;ctx.drawImage(images.film,-23,-23,46,46);ctx.restore();}
 function draw(time) { ctx.clearRect(0,0,960,540); if(game.scene==="projector") drawProjectorRoom(time); else drawHongdae(time); [{type:"peanut",e:peanut,w:60,h:78},{type:"jenny",e:player,w:70,h:122}].sort((a,b)=>a.e.y-b.e.y).forEach(a=>drawSprite(images[a.type],a.e,a.w,a.h)); if(game.fade>0){ctx.fillStyle=`rgba(255,248,220,${Math.min(1,game.fade)})`;ctx.fillRect(0,0,960,540);} }
 function loop(time) { const dt=Math.min(.034,(time-game.lastTime)/1000||0);game.lastTime=time;update(dt,time);if(game.fade>0){if(game.transition){game.fade+=dt*2.5;if(game.fade>=1){const cb=game.transition;game.transition=null;cb();game.fade=.99;}}else{game.fade-=dt*3;if(game.fade<=0)game.fade=0;}}draw(time);requestAnimationFrame(loop); }
 
-ui.start.addEventListener("click",startGame);canvas.addEventListener("pointerdown",onPointer);ui.action.addEventListener("click",()=>game.nearby?.action());ui.dialogue.addEventListener("click",advanceDialogue);
+ui.start.addEventListener("click",()=>startGame(false));ui.continue.addEventListener("click",()=>startGame(true));ui.restart.addEventListener("click",()=>startGame(false));canvas.addEventListener("pointerdown",onPointer);ui.action.addEventListener("click",()=>game.nearby?.action());ui.dialogue.addEventListener("click",advanceDialogue);
 document.addEventListener("keydown",e=>{if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].includes(e.key)){game.keys.add(e.key);e.preventDefault();}if((e.key===" "||e.key==="Enter")&&game.nearby&&!ui.action.hidden)game.nearby.action();});document.addEventListener("keyup",e=>game.keys.delete(e.key));
 document.querySelectorAll("[data-ring]").forEach(button=>button.addEventListener("click",()=>chooseRing(button.dataset.ring)));document.querySelector("#return-button").addEventListener("click",()=>{ui.letterPanel.hidden=true;game.stage=4;transitionTo(()=>setProjectorRoom(true));});document.querySelector("#sound-button").addEventListener("click",e=>{e.currentTarget.textContent=e.currentTarget.textContent==="♪"?"×":"♪";});
-loadImages().then(()=>{ui.loading.style.display="none";}).catch(()=>{ui.loading.textContent="角色素材加载失败，请刷新重试。";});
+loadImages().then(()=>{ui.loading.style.display="none"; ui.continue.hidden=!game.memoryOne; ui.start.textContent=game.memoryOne?"从头重玩":"进入放映室";}).catch(()=>{ui.loading.textContent="角色素材加载失败，请刷新重试。";});
