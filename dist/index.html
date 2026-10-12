@@ -3,80 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b2430" />
-  <meta name="description" content="送给苏雨菲的生日回忆冒险。" />
-  <title>沿着回忆找到你 · Jenny 的生日冒险</title>
+  <meta name="theme-color" content="#071b26" />
+  <meta name="description" content="苏雨菲的像素回忆冒险。" />
+  <title>花生带你回到那一天</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="stars" aria-hidden="true"></div>
-
-  <main id="app">
-    <section id="intro" class="screen intro-screen active" aria-labelledby="intro-title">
-      <div class="intro-card">
-        <div class="pet-orbit" aria-hidden="true">
-          <span class="pet pet-cat">🐱</span>
-          <span class="pet pet-dog">🐶</span>
+  <main id="game-shell">
+    <section id="title-screen" class="overlay-screen active">
+      <div class="title-card">
+        <p class="eyebrow">A MEMORY ADVENTURE FOR JENNY</p>
+        <h1>花生带你<br />回到那一天</h1>
+        <p>一卷坏掉的胶片，藏着七段不想忘记的日子。</p>
+        <div class="pixel-cast" aria-hidden="true">
+          <span class="mini-sprite jenny-mini"></span>
+          <span class="heart">♥</span>
+          <span class="mini-sprite peanut-mini"></span>
         </div>
-        <p class="eyebrow">一封来自回忆世界的邀请函</p>
-        <h1 id="intro-title">沿着回忆<br />找到你</h1>
-        <p class="intro-copy">苏雨菲小朋友，有人把七段很重要的回忆藏在了地图里。<br />找到它们，就能打开最后的生日礼物。</p>
-        <label class="name-field">
-          <span>冒险者的名字</span>
-          <input id="player-name" value="Jenny" maxlength="12" autocomplete="off" />
-        </label>
-        <button id="start-button" class="primary-button">开始冒险 <span>→</span></button>
-        <p class="tiny-note">游戏会自动保存在这台设备上</p>
+        <button id="start-button" class="primary">进入放映室</button>
+        <small>点击地面移动 · 靠近物品后进行互动</small>
       </div>
     </section>
 
-    <section id="game" class="screen game-screen" aria-labelledby="map-title">
-      <header class="game-header">
+    <section id="play-screen" class="play-screen" aria-label="像素回忆游戏">
+      <header class="hud">
         <div>
-          <p class="eyebrow">JENNY'S MEMORY MAP</p>
-          <h2 id="map-title">我们的回忆地图</h2>
+          <p id="scene-label" class="scene-label">序章 · 放映室</p>
+          <p id="objective" class="objective">找到让放映机重新转动的东西</p>
         </div>
-        <button id="journal-button" class="journal-button" aria-label="打开信件收藏">
-          <span>💌</span><b id="letter-count">0 / 7</b>
-        </button>
+        <button id="sound-button" class="icon-button" aria-label="声音开关">♪</button>
       </header>
 
-      <div class="guide-card">
-        <span class="guide-avatar">🐶</span>
-        <div>
-          <b>花生</b>
-          <p id="guide-message">宝宝，先从我们第一次见面的地方出发吧！</p>
+      <div id="canvas-wrap">
+        <canvas id="game-canvas" width="960" height="540" aria-label="游戏场景"></canvas>
+        <div id="loading" class="loading">正在把回忆装进放映机…</div>
+        <div id="tap-marker" class="tap-marker" aria-hidden="true"></div>
+        <button id="action-button" class="action-button" hidden>互动</button>
+        <div id="dialogue" class="dialogue" hidden>
+          <span id="speaker-avatar" class="speaker-avatar">🐶</span>
+          <div><b id="speaker">花生</b><p id="dialogue-text"></p></div>
+          <span class="continue-caret">▼</span>
         </div>
       </div>
 
-      <div class="map-shell">
-        <div class="map-decoration moon">☾</div>
-        <div class="map-decoration cloud cloud-one"></div>
-        <div class="map-decoration cloud cloud-two"></div>
-        <svg class="route" viewBox="0 0 400 1080" preserveAspectRatio="none" aria-hidden="true">
-          <path class="route-shadow" d="M80,100 C300,150 310,245 190,300 C55,360 65,455 215,505 C355,550 330,670 175,700 C45,730 80,850 230,880 C335,905 335,995 270,1040" />
-          <path class="route-line" d="M80,100 C300,150 310,245 190,300 C55,360 65,455 215,505 C355,550 330,670 175,700 C45,730 80,850 230,880 C335,905 335,995 270,1040" />
-        </svg>
-        <div id="map-nodes" class="map-nodes"></div>
-        <div id="player-token" class="player-token" aria-hidden="true"><span>🐱</span></div>
+      <div class="controls-help">
+        <span>点击地面 / WASD 移动</span>
+        <span id="memory-count">胶片 0 / 7</span>
       </div>
-
-      <footer class="game-footer">
-        <p>10.25 · 写给全世界最幸运的女孩</p>
-        <button id="reset-button" class="text-button">重新开始</button>
-      </footer>
     </section>
   </main>
 
-  <div id="modal" class="modal" aria-hidden="true">
-    <div class="modal-backdrop" data-close-modal></div>
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <button class="modal-close" data-close-modal aria-label="关闭">×</button>
-      <div id="modal-content"></div>
-    </section>
-  </div>
+  <section id="ring-panel" class="modal" hidden aria-label="挑选戒指">
+    <div class="modal-card">
+      <p class="eyebrow">弘大 · 戒指小摊</p>
+      <h2>替他挑一枚戒指</h2>
+      <p>没有正确答案。那天重要的不是挑中了哪一枚，而是你认真替他看了很久。</p>
+      <div class="ring-options">
+        <button data-ring="星星"><span>✦</span>星星</button>
+        <button data-ring="月亮"><span>☾</span>月亮</button>
+        <button data-ring="圆环"><span>○</span>圆环</button>
+      </div>
+    </div>
+  </section>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <section id="letter-panel" class="modal" hidden aria-label="第一张回忆胶片">
+    <div class="modal-card letter-card">
+      <div class="film-icon">▣</div>
+      <p class="eyebrow">MEMORY 01 RESTORED</p>
+      <h2>镜子里的第一次</h2>
+      <p class="letter-copy">宝宝，第一次见你时，我已经在镜子里偷偷练习，怎样站在你身边。后来我才知道，那天真正被挑中的不是戒指，是我。</p>
+      <button id="return-button" class="primary">把胶片带回放映室</button>
+    </div>
+  </section>
+
   <script src="app.js"></script>
 </body>
 </html>

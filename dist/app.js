@@ -1,386 +1,102 @@
-const STORAGE_KEY = "jenny-memory-adventure-v1";
+const canvas = document.querySelector("#game-canvas");
+const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
 
-const chapters = [
-  {
-    id: "hongdae",
-    title: "弘大初见",
-    kicker: "小姚明登场",
-    emoji: "👟",
-    x: 20, y: 9,
-    subtitle: "故事开始的地方",
-    story: "第一次见面是在弘大。阿迪店的镜子前，两个人一本正经地比身高。后来，你还帮他挑了戒指——当时谁也不知道，这会成为一场很长很长的冒险。",
-    type: "quiz",
-    question: "他当时最出名的江湖外号是？",
-    choices: ["光云大学小姚明", "弘大第一帅", "首尔英语教父"],
-    answer: 0,
-    wrong: "身高提示已经这么明显了，老婆再想想！",
-    letterTitle: "第一封信 · 初见",
-    letter: "宝宝，我一直觉得第一次见你时，命运已经偷偷给了我提示。镜子里比的不只是身高，也是我后来每次回忆起我们时，嘴角会上扬的高度。谢谢那一天的你，走进了我的生活。"
-  },
-  {
-    id: "myeongdong",
-    title: "明洞支线",
-    kicker: "英语老师的秘密",
-    emoji: "📚",
-    x: 72, y: 20,
-    subtitle: "两位演员的专业表演",
-    story: "正式谈恋爱之前，有人装模作样教了好多天英语；另一个人也装模作样认真学了好多天。关系变亲昵的那天，他给你送了衣服穿。",
-    type: "quiz",
-    question: "这门英语课真正的课程目标是什么？",
-    choices: ["通过雅思考试", "学习过去完成时", "找理由多见宝宝几次"],
-    answer: 2,
-    wrong: "花生摇头：这明显不是一门正经英语课。",
-    letterTitle: "第二封信 · 笨拙的靠近",
-    letter: "那些英语课，我讲得也许并没有多好。可我很庆幸我们都默契地把戏演了下去。喜欢一个人的时候，连找借口靠近都显得那么认真。"
-  },
-  {
-    id: "aquarium",
-    title: "海洋馆",
-    kicker: "第一次约会",
-    emoji: "🐠",
-    x: 47, y: 30,
-    subtitle: "在蓝色世界里收集心动",
-    story: "第一次约会去了海洋馆。现在，藏在水里的五颗心动泡泡又飘回来了。",
-    type: "bubbles",
-    letterTitle: "第三封信 · 第一次约会",
-    letter: "那天的海洋馆很蓝，鱼群从我们身边游过。但我记得最清楚的，还是站在我旁边的你。后来见过很多风景，我还是最喜欢和你一起看的那些。"
-  },
-  {
-    id: "lucky",
-    title: "首尔好运街",
-    kicker: "幸运女孩事件簿",
-    emoji: "🎟️",
-    x: 20, y: 46,
-    subtitle: "抽一次属于你的签",
-    story: "Lotte 超市一等奖、假装上厕所去买的 Hello Kitty、十五块钱的超长冰淇淋，还有一起染得一块亮一块暗的黄头发……请验证一下你是不是 the luckiest guy。",
-    type: "lottery",
-    letterTitle: "第四封信 · 幸运",
-    letter: "你总说自己抽中了一等奖，可我心里最幸运的人其实是我。因为那么多普通又好笑的日子，身边都有你。至于那颗假装掉在地上的 Hello Kitty——现在正式归还失主。"
-  },
-  {
-    id: "campus",
-    title: "校园日常",
-    kicker: "咖啡、篮球与自习",
-    emoji: "☕",
-    x: 72, y: 59,
-    subtitle: "最普通，也最珍贵",
-    story: "一起去咖啡店上自习，在你的学校一起学习；你陪他打篮球、给他捡球。还有情侣装、人生四格，以及一录视频就笑个不停的两个人。",
-    type: "quiz",
-    question: "如果只能给这些日常起一个名字，它应该叫？",
-    choices: ["浪费时间", "普通的一天", "想重复一辈子的日子"],
-    answer: 2,
-    wrong: "花生：提示一下，这道题没有任何难度。",
-    letterTitle: "第五封信 · 平凡日子",
-    letter: "以前总觉得要带你去很好的地方、给你很好的东西，才算爱你。可后来我明白，真正让我舍不得的，是咖啡店、篮球场、人生四格，是我们笑到录不好一段视频的普通一天。我想和你重复很多很多这样的日子。"
-  },
-  {
-    id: "shenzhen",
-    title: "深圳补给站",
-    kicker: "打折食品大作战",
-    emoji: "🛒",
-    x: 31, y: 73,
-    subtitle: "用 30 元准备一顿晚餐",
-    story: "在深圳逛沃尔玛，等晚上的打折食物，然后两个人饱餐一顿。请选择至少两样食物，总价不能超过 30 元。",
-    type: "shopping",
-    letterTitle: "第六封信 · 一起生活",
-    letter: "我们吃过 unlimited BBQ，也吃过沃尔玛晚上的打折食物；去过蛙来哒和老船长肉蟹煲。昂贵不昂贵，从来不是我记得一顿饭的原因。我记得，是因为坐在对面的人一直是你。以后我想慢慢把曾经没能给你的，都补给你。"
-  },
-  {
-    id: "confession",
-    title: "航大站台",
-    kicker: "花与真正的答案",
-    emoji: "💐",
-    x: 61, y: 85,
-    subtitle: "故事最重要的一站",
-    story: "韩国航空大学地铁站，他拿着花给你惊喜、向你表白。虽然早在圣水洞的阿迪店里，他已经忍不住口头表白过一次了。",
-    type: "quiz",
-    question: "后来一次次送你回宿舍时，他在心里做了什么决定？",
-    choices: ["下次早点回家", "以后永远在一起，不分离", "少吃一点五花肉"],
-    answer: 1,
-    wrong: "这一次，请认真听听他的心。",
-    letterTitle: "第七封信 · 我的决定",
-    letter: "老婆，我永远忘不了一次次在你宿舍楼下送你回去。每次转身，我都在心里更确定一点：我想和你永远在一起，不分离。以前没能带你享受特别好的生活，是我心里一直记着的遗憾。但请相信，我想给你的未来，从来不只是礼物，而是我全部的认真。"
-  },
-  {
-    id: "final",
-    title: "生日终点",
-    kicker: "10.25",
-    emoji: "🎂",
-    x: 70, y: 96,
-    subtitle: "只有收齐七封信才能进入",
-    type: "final"
-  }
-];
+const ui = {
+  title: document.querySelector("#title-screen"), play: document.querySelector("#play-screen"), start: document.querySelector("#start-button"),
+  loading: document.querySelector("#loading"), objective: document.querySelector("#objective"), scene: document.querySelector("#scene-label"),
+  action: document.querySelector("#action-button"), dialogue: document.querySelector("#dialogue"), speaker: document.querySelector("#speaker"),
+  avatar: document.querySelector("#speaker-avatar"), dialogueText: document.querySelector("#dialogue-text"), tapMarker: document.querySelector("#tap-marker"),
+  ringPanel: document.querySelector("#ring-panel"), letterPanel: document.querySelector("#letter-panel"), memoryCount: document.querySelector("#memory-count")
+};
 
-const defaultState = { started: false, playerName: "Jenny", completed: [] };
-let state = loadState();
-let currentChapter = null;
+const images = {};
+const imagePaths = { jenny: "assets/sprites/jenny-walk.png", herry: "assets/sprites/herry-walk.png", peanut: "assets/sprites/peanut-walk.png" };
+const save = JSON.parse(localStorage.getItem("jenny-adventure-prototype") || "{}") || {};
+const game = { scene: "projector", stage: save.memoryOne ? 4 : 0, memoryOne: Boolean(save.memoryOne), running: false, lastTime: 0, keys: new Set(), dialogueQueue: [], dialogueCallback: null, nearby: null, fade: 0, transition: null };
+const player = { x: 480, y: 410, tx: 480, ty: 410, speed: 185, dir: 0, moving: false, frame: 1 };
+const peanut = { x: 420, y: 430, dir: 0, moving: false, frame: 1, trail: [] };
+const herry = { x: 730, y: 355, dir: 0, frame: 1, tiptoe: 0 };
 
-const intro = document.querySelector("#intro");
-const game = document.querySelector("#game");
-const modal = document.querySelector("#modal");
-const modalContent = document.querySelector("#modal-content");
-const mapNodes = document.querySelector("#map-nodes");
-const token = document.querySelector("#player-token");
-const toast = document.querySelector("#toast");
+function loadImages() { return Promise.all(Object.entries(imagePaths).map(([key, src]) => new Promise((resolve, reject) => { const image = new Image(); image.onload = () => { images[key] = image; resolve(); }; image.onerror = reject; image.src = src; }))); }
+function persist() { localStorage.setItem("jenny-adventure-prototype", JSON.stringify({ memoryOne: game.memoryOne })); }
 
-function loadState() {
-  try {
-    return { ...defaultState, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };
-  } catch {
-    return { ...defaultState };
-  }
+function startGame() {
+  ui.title.classList.remove("active"); ui.play.classList.add("active"); game.running = true;
+  if (game.memoryOne) { game.stage = 4; setProjectorRoom(true); say("花生", "第一张胶片已经回来了。剩下的六扇光门，还在等我们。", "🐶"); }
+  else { setProjectorRoom(false); sayMany([["花生", "Jenny！你终于来了。我本来想给你放一部很重要的电影……", "🐶"],["花生", "可放映机不动了，胶片也少了七格。先在房间里找找能让它转起来的东西吧。", "🐶"]]); }
+  requestAnimationFrame(loop);
 }
 
-function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+function setProjectorRoom(restored) { game.scene = "projector"; player.x = player.tx = 480; player.y = player.ty = 420; peanut.x = 410; peanut.y = 430; peanut.trail=[]; game.stage = restored ? 4 : game.stage; ui.scene.textContent = "序章 · 坏掉的放映室"; updateObjective(); }
+function setHongdae() { game.scene = "hongdae"; game.stage = 10; player.x = player.tx = 470; player.y = player.ty = 430; peanut.x = 410; peanut.y = 445; peanut.trail=[]; ui.scene.textContent = "第一章 · 弘大镜子里的小姚明"; updateObjective(); say("花生", "这里就是故事开始的地方。去看看那面镜子，它好像还记得你们。", "🐶"); }
+
+function updateObjective() {
+  let text = "";
+  if (game.scene === "projector") { if (game.stage === 0) text = "在放映室里寻找发条"; if (game.stage === 1) text = "把发条装回放映机"; if (game.stage === 2) text = "走进亮起的回忆光门"; if (game.stage >= 4) text = "第一张胶片已归位 · 后续光门正在制作"; }
+  else { if (game.stage === 10) text = "走到阿迪店的镜子前"; if (game.stage === 11) text = "去戒指小摊看看"; if (game.stage === 12) text = "拾起恢复的回忆胶片"; if (game.stage >= 13) text = "弘大回忆已经修复"; }
+  ui.objective.textContent = text; ui.memoryCount.textContent = `胶片 ${game.memoryOne ? 1 : 0} / 7`;
 }
 
-function showScreen() {
-  intro.classList.toggle("active", !state.started);
-  game.classList.toggle("active", state.started);
-  if (state.started) renderMap();
+function say(name, text, avatar = "🐶", callback) { game.dialogueQueue.push({ name, text, avatar, callback }); if (ui.dialogue.hidden) showNextDialogue(); }
+function sayMany(lines, callback) { lines.forEach((line, index) => say(line[0], line[1], line[2], index === lines.length - 1 ? callback : null)); }
+function showNextDialogue() { const next = game.dialogueQueue.shift(); if (!next) { ui.dialogue.hidden = true; return; } ui.speaker.textContent = next.name; ui.dialogueText.textContent = next.text; ui.avatar.textContent = next.avatar; ui.dialogue.hidden = false; game.dialogueCallback = next.callback || null; }
+function advanceDialogue() { if (ui.dialogue.hidden) return; const callback = game.dialogueCallback; game.dialogueCallback = null; ui.dialogue.hidden = true; if (callback) callback(); showNextDialogue(); }
+
+function worldPoint(event) { const rect = canvas.getBoundingClientRect(); return { x: (event.clientX - rect.left) * canvas.width / rect.width, y: (event.clientY - rect.top) * canvas.height / rect.height }; }
+function setTarget(x, y) { player.tx = Math.max(55, Math.min(905, x)); player.ty = Math.max(285, Math.min(480, y)); }
+function onPointer(event) { if (!ui.dialogue.hidden || !ui.ringPanel.hidden || !ui.letterPanel.hidden) return; const p = worldPoint(event); setTarget(p.x, p.y); const rect = canvas.getBoundingClientRect(); ui.tapMarker.style.left = `${event.clientX - rect.left}px`; ui.tapMarker.style.top = `${event.clientY - rect.top}px`; ui.tapMarker.style.display = "block"; ui.tapMarker.style.animation = "none"; void ui.tapMarker.offsetWidth; ui.tapMarker.style.animation = "marker .55s ease-out forwards"; }
+function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+
+function update(dt, time) {
+  if (!game.running || !ui.dialogue.hidden || !ui.ringPanel.hidden || !ui.letterPanel.hidden) return;
+  let dx = 0, dy = 0;
+  if (game.keys.has("ArrowLeft") || game.keys.has("a")) dx -= 1; if (game.keys.has("ArrowRight") || game.keys.has("d")) dx += 1; if (game.keys.has("ArrowUp") || game.keys.has("w")) dy -= 1; if (game.keys.has("ArrowDown") || game.keys.has("s")) dy += 1;
+  if (dx || dy) { const length = Math.hypot(dx,dy); dx /= length; dy /= length; player.tx = player.x + dx * 24; player.ty = player.y + dy * 24; }
+  const vx = player.tx - player.x, vy = player.ty - player.y, d = Math.hypot(vx,vy); player.moving = d > 2;
+  if (player.moving) { const step = Math.min(d, player.speed * dt); player.x += vx / d * step; player.y += vy / d * step; if (Math.abs(vx) > Math.abs(vy)) player.dir = vx < 0 ? 1 : 2; else player.dir = vy < 0 ? 3 : 0; player.frame = Math.floor(time / 150) % 4; } else player.frame = 1;
+  player.x = Math.max(55, Math.min(905, player.x)); player.y = Math.max(285, Math.min(480, player.y));
+  peanut.trail.push({x:player.x, y:player.y}); if (peanut.trail.length > 28) peanut.trail.shift(); const follow = peanut.trail[0] || {x:player.x - 55, y:player.y + 15}; const pdx = follow.x - peanut.x, pdy = follow.y - peanut.y, pd = Math.hypot(pdx,pdy); peanut.moving = pd > 4;
+  if (peanut.moving) { const step = Math.min(pd, 150 * dt); peanut.x += pdx / pd * step; peanut.y += pdy / pd * step; if (Math.abs(pdx) > Math.abs(pdy)) peanut.dir = pdx < 0 ? 1 : 2; else peanut.dir = pdy < 0 ? 3 : 0; peanut.frame = Math.floor(time / 170) % 4; } else peanut.frame = 1;
+  updateNearby();
 }
 
-function renderMap() {
-  mapNodes.innerHTML = "";
-  const completedCount = state.completed.length;
-  chapters.forEach((chapter, index) => {
-    const unlocked = chapter.type === "final" ? completedCount === 7 : index <= completedCount;
-    const completed = state.completed.includes(chapter.id);
-    const node = document.createElement("div");
-    node.className = `map-node ${unlocked ? "" : "locked"} ${completed ? "completed" : ""} ${unlocked && !completed && index === completedCount ? "current" : ""}`;
-    node.style.left = `${chapter.x}%`;
-    node.style.top = `${chapter.y}%`;
-    node.innerHTML = `
-      <button class="node-button" ${unlocked ? "" : "disabled"} aria-label="${chapter.title}${unlocked ? "" : "，尚未解锁"}">
-        ${unlocked ? chapter.emoji : "🔒"}<span class="node-check">✓</span>
-      </button>
-      <span class="node-title">${chapter.title}</span>
-      <span class="node-kicker">${unlocked ? chapter.kicker : "尚未解锁"}</span>`;
-    if (unlocked) node.querySelector("button").addEventListener("click", () => openChapter(chapter));
-    mapNodes.appendChild(node);
-  });
-
-  const activeIndex = Math.min(completedCount, chapters.length - 1);
-  const active = chapters[activeIndex];
-  token.style.left = `calc(${active.x}% + 32px)`;
-  token.style.top = `calc(${active.y}% - 52px)`;
-  document.querySelector("#letter-count").textContent = `${completedCount} / 7`;
-  document.querySelector("#guide-message").textContent = completedCount === 7
-    ? "七封信都找到了。生日终点已经亮起来啦！"
-    : `下一站：${chapters[completedCount].title}。${chapters[completedCount].kicker}！`;
+function updateNearby() {
+  game.nearby = null;
+  if (game.scene === "projector") { if (game.stage === 0 && distance(player,{x:185,y:405}) < 85) game.nearby = {label:"捡起发条", action:collectKey}; if (game.stage === 1 && distance(player,{x:480,y:305}) < 105) game.nearby = {label:"装上发条", action:startProjector}; if (game.stage === 2 && distance(player,{x:805,y:385}) < 95) game.nearby = {label:"走进回忆", action:()=>transitionTo(setHongdae)}; }
+  else { if (game.stage === 10 && distance(player,{x:765,y:370}) < 95) game.nearby = {label:"站到镜子前", action:mirrorMoment}; if (game.stage === 11 && distance(player,{x:160,y:395}) < 95) game.nearby = {label:"看看戒指", action:()=>{ui.ringPanel.hidden=false;}}; if (game.stage === 12 && distance(player,{x:480,y:350}) < 85) game.nearby = {label:"拾起胶片", action:collectFilm}; }
+  ui.action.hidden = !game.nearby; if (game.nearby) ui.action.textContent = game.nearby.label;
 }
 
-function openChapter(chapter) {
-  currentChapter = chapter;
-  if (chapter.type === "final") return renderFinal();
-  if (state.completed.includes(chapter.id)) return revealLetter(chapter, false);
+function collectKey() { game.stage = 1; updateObjective(); sayMany([["Jenny", "找到一枚旧发条。", "👧"],["花生", "它和放映机侧面的缺口好像正合适！", "🐶"]]); }
+function startProjector() { game.stage = 2; updateObjective(); sayMany([["花生", "转起来了！房间里出现了一扇通往过去的光门。", "🐶"],["花生", "别担心，我会一直跟着你。", "🐶"]]); }
+function mirrorMoment() { game.stage = 11; herry.tiptoe = 1; updateObjective(); sayMany([["Herry", "听说你最早知道我的外号，是光云大学小姚明。", "👦"],["花生", "所以他为什么还要偷偷踮脚？", "🐶"],["Jenny", "明明只差十厘米。", "👧"]], () => { herry.tiptoe = 0; }); }
+function chooseRing(name) { ui.ringPanel.hidden = true; game.stage = 12; updateObjective(); sayMany([["Jenny", `就这枚${name}吧。`, "👧"],["Herry", "好。你挑的，我会一直留着。", "👦"],["花生", "镜子里的颜色回来了！还有什么东西掉在了地上。", "🐶"]]); }
+function collectFilm() { game.stage = 13; game.memoryOne = true; persist(); updateObjective(); ui.letterPanel.hidden = false; }
+function transitionTo(callback) { game.transition = callback; game.fade = 0.01; }
 
-  modalContent.innerHTML = `
-    <div class="stage-emoji">${chapter.emoji}</div>
-    <p class="eyebrow">MEMORY ${chapters.indexOf(chapter) + 1} / 7</p>
-    <h3 id="modal-title">${chapter.title}</h3>
-    <p class="stage-subtitle">${chapter.subtitle}</p>
-    <div class="story-box">${chapter.story}</div>
-    <div id="stage-task"></div>`;
-
-  const task = document.querySelector("#stage-task");
-  if (chapter.type === "quiz") renderQuiz(task, chapter);
-  if (chapter.type === "bubbles") renderBubbles(task, chapter);
-  if (chapter.type === "lottery") renderLottery(task, chapter);
-  if (chapter.type === "shopping") renderShopping(task, chapter);
-  openModal();
+function drawSprite(image, entity, width, height, yOffset = 0) { const fw = image.width / 4, fh = image.height / 4; const sx = entity.frame * fw, sy = entity.dir * fh; ctx.drawImage(image, sx, sy, fw, fh, entity.x - width/2, entity.y - height + yOffset, width, height); }
+function drawProjectorRoom(time) {
+  const restored = game.stage >= 2; ctx.fillStyle = restored ? "#153b43" : "#18262b"; ctx.fillRect(0,0,960,540); ctx.fillStyle = restored ? "#1f5960" : "#25383d"; ctx.fillRect(0,0,960,275); ctx.fillStyle = restored ? "#376a67" : "#344448"; ctx.fillRect(0,275,960,265);
+  for(let y=285;y<540;y+=34){ctx.strokeStyle=restored?"#295551":"#2a393c";ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(960,y);ctx.stroke();} for(let x=-200;x<1160;x+=90){ctx.strokeStyle=restored?"#295551":"#2a393c";ctx.beginPath();ctx.moveTo(480,275);ctx.lineTo(x,540);ctx.stroke();}
+  ctx.fillStyle="#061116"; ctx.fillRect(330,42,300,170); ctx.strokeStyle=restored?"#9be8c2":"#45585d"; ctx.lineWidth=6; ctx.strokeRect(330,42,300,170); if(restored){const g=ctx.createRadialGradient(480,125,10,480,125,150);g.addColorStop(0,"rgba(255,240,167,.42)");g.addColorStop(1,"rgba(255,240,167,0)");ctx.fillStyle=g;ctx.fillRect(320,30,320,200);}
+  drawProjector(restored); drawSeats(); if(game.stage===0) drawKey(); if(game.stage===2) drawPortal(time); if(game.stage>=4){ctx.fillStyle="#122a31";ctx.fillRect(760,302,110,130);ctx.strokeStyle="#3c565b";ctx.strokeRect(760,302,110,130);}
 }
-
-function renderQuiz(container, chapter) {
-  container.innerHTML = `
-    <h4 class="task-title">${chapter.question}</h4>
-    <div class="choice-grid">${chapter.choices.map((choice, index) => `<button class="choice-button" data-index="${index}">${choice}</button>`).join("")}</div>
-    <p class="mini-hint" aria-live="polite"></p>`;
-  const hint = container.querySelector(".mini-hint");
-  container.querySelectorAll(".choice-button").forEach(button => {
-    button.addEventListener("click", () => {
-      if (Number(button.dataset.index) === chapter.answer) {
-        completeChapter(chapter);
-      } else {
-        button.classList.remove("wrong");
-        void button.offsetWidth;
-        button.classList.add("wrong");
-        hint.textContent = chapter.wrong;
-      }
-    });
-  });
+function drawProjector(on){ctx.fillStyle="#172329";ctx.fillRect(430,220,100,62);ctx.fillStyle="#34474b";ctx.fillRect(448,202,64,28);ctx.fillStyle=on?"#f7c94a":"#6a7777";ctx.beginPath();ctx.arc(480,234,16,0,Math.PI*2);ctx.fill();if(on){ctx.strokeStyle="#f7c94a";ctx.lineWidth=4;ctx.beginPath();ctx.arc(455,215,14,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(505,215,14,0,Math.PI*2);ctx.stroke();}}
+function drawSeats(){for(let x=80;x<880;x+=145){ctx.fillStyle="#132a31";ctx.fillRect(x,315,90,54);ctx.fillStyle="#0b2027";ctx.fillRect(x+8,360,10,34);ctx.fillRect(x+72,360,10,34);}}
+function drawKey(){ctx.save();ctx.translate(185,375);ctx.rotate(-.25);ctx.strokeStyle="#f7c94a";ctx.lineWidth=6;ctx.beginPath();ctx.arc(0,0,14,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(13,7);ctx.lineTo(38,25);ctx.lineTo(48,15);ctx.moveTo(38,25);ctx.lineTo(30,34);ctx.stroke();ctx.restore();}
+function drawPortal(time){const pulse=8+Math.sin(time/220)*5;ctx.fillStyle="rgba(111,225,181,.16)";ctx.fillRect(755-pulse/2,282-pulse/2,120+pulse,170+pulse);ctx.strokeStyle="#7be0ae";ctx.lineWidth=6;ctx.strokeRect(765,292,100,150);ctx.fillStyle="rgba(87,182,210,.35)";ctx.fillRect(771,298,88,138);ctx.fillStyle="#fff2cf";ctx.font="bold 12px sans-serif";ctx.textAlign="center";ctx.fillText("弘大 · 过去",815,475);}
+function drawHongdae(time){
+  const restored=game.stage>=12;ctx.fillStyle=restored?"#163746":"#25333a";ctx.fillRect(0,0,960,540);ctx.fillStyle=restored?"#31596a":"#3d484c";ctx.fillRect(0,0,960,270);ctx.fillStyle=restored?"#455a61":"#444b4d";ctx.fillRect(0,270,960,270);
+  ctx.fillStyle=restored?"#d9eff0":"#8a9595";ctx.fillRect(675,70,200,235);ctx.fillStyle=restored?"#80b6c3":"#748184";ctx.fillRect(690,85,170,205);ctx.strokeStyle="#f2ead7";ctx.lineWidth=7;ctx.strokeRect(675,70,200,235);
+  ctx.fillStyle=restored?"#25576a":"#414d51";ctx.fillRect(38,155,240,165);ctx.fillStyle="#17282e";ctx.fillRect(55,175,205,120);for(let i=0;i<3;i++){ctx.fillStyle=["#e8c45f","#cdd9db","#e0a08d"][i];ctx.beginPath();ctx.arc(105+i*58,235,14,0,Math.PI*2);ctx.fill();}ctx.fillStyle="#fff2cf";ctx.font="bold 14px sans-serif";ctx.textAlign="center";ctx.fillText("RING",158,193);
+  if(game.stage>=11){herry.y=game.stage===11?355-Math.sin(time/120)*3:355;drawSprite(images.herry,herry,112,130);} if(game.stage===12) drawFilm(time);ctx.fillStyle="rgba(255,255,255,.5)";ctx.font="12px sans-serif";ctx.textAlign="left";ctx.fillText("HONGDAE · SEOUL",32,40);
 }
+function drawFilm(time){ctx.save();ctx.translate(480,335+Math.sin(time/250)*7);ctx.fillStyle="#f7c94a";ctx.fillRect(-22,-16,44,32);ctx.fillStyle="#1d3540";for(let x=-17;x<=12;x+=10){ctx.fillRect(x,-12,6,6);ctx.fillRect(x,6,6,6);}ctx.fillRect(-8,-7,16,14);ctx.restore();}
+function draw(time) { ctx.clearRect(0,0,960,540); if(game.scene==="projector") drawProjectorRoom(time); else drawHongdae(time); [{type:"peanut",e:peanut,w:72,h:78},{type:"jenny",e:player,w:104,h:122}].sort((a,b)=>a.e.y-b.e.y).forEach(a=>drawSprite(images[a.type],a.e,a.w,a.h)); if(game.fade>0){ctx.fillStyle=`rgba(255,248,220,${Math.min(1,game.fade)})`;ctx.fillRect(0,0,960,540);} }
+function loop(time) { const dt=Math.min(.034,(time-game.lastTime)/1000||0);game.lastTime=time;update(dt,time);if(game.fade>0){if(game.transition){game.fade+=dt*2.5;if(game.fade>=1){const cb=game.transition;game.transition=null;cb();game.fade=.99;}}else{game.fade-=dt*3;if(game.fade<=0)game.fade=0;}}draw(time);requestAnimationFrame(loop); }
 
-function renderBubbles(container, chapter) {
-  const positions = [[12,55],[31,22],[49,61],[68,29],[81,66]];
-  container.innerHTML = `
-    <h4 class="task-title">戳破五颗心动泡泡</h4>
-    <div class="collect-area">${positions.map((p, i) => `<button class="bubble" style="left:${p[0]}%;top:${p[1]}%;animation-delay:${i * .2}s" aria-label="心动泡泡">💙</button>`).join("")}</div>
-    <p class="progress-line">已收集 <b id="bubble-count">0</b> / 5</p>`;
-  let count = 0;
-  container.querySelectorAll(".bubble").forEach(bubble => bubble.addEventListener("click", () => {
-    if (bubble.classList.contains("collected")) return;
-    bubble.classList.add("collected");
-    count += 1;
-    container.querySelector("#bubble-count").textContent = count;
-    if (count === 5) setTimeout(() => completeChapter(chapter), 350);
-  }));
-}
-
-function renderLottery(container, chapter) {
-  container.innerHTML = `
-    <h4 class="task-title">点击奖箱，抽取今天的运气</h4>
-    <div class="lucky-box"><button class="lottery-button" aria-label="抽奖">🎁</button></div>
-    <p class="mini-hint">据说真正的幸运女孩一抽就中。</p>`;
-  container.querySelector(".lottery-button").addEventListener("click", (event) => {
-    event.currentTarget.textContent = "🏆";
-    event.currentTarget.disabled = true;
-    container.querySelector(".mini-hint").textContent = "一等奖：和光云大学小姚明续约一辈子！";
-    setTimeout(() => completeChapter(chapter), 1000);
-  });
-}
-
-function renderShopping(container, chapter) {
-  const foods = [
-    { name: "打折寿司", price: 12, emoji: "🍣" },
-    { name: "草莓牛奶", price: 7, emoji: "🥛" },
-    { name: "小蛋糕", price: 9, emoji: "🍰" },
-    { name: "豪华肉蟹煲", price: 38, emoji: "🦀" }
-  ];
-  container.innerHTML = `
-    <h4 class="task-title">今晚吃什么？</h4>
-    <div class="shopping-grid">${foods.map((food, i) => `<button class="food-card" data-index="${i}"><span>${food.emoji}</span><b>${food.name}</b><small>¥${food.price}</small></button>`).join("")}</div>
-    <div class="budget-row"><span>预算：¥30</span><b>已选：¥<span id="total">0</span></b></div>
-    <button class="primary-button" id="checkout">装进购物袋</button>
-    <p class="mini-hint"></p>`;
-  const selected = new Set();
-  const totalEl = container.querySelector("#total");
-  container.querySelectorAll(".food-card").forEach(card => card.addEventListener("click", () => {
-    const index = Number(card.dataset.index);
-    selected.has(index) ? selected.delete(index) : selected.add(index);
-    card.classList.toggle("selected");
-    totalEl.textContent = [...selected].reduce((sum, i) => sum + foods[i].price, 0);
-  }));
-  container.querySelector("#checkout").addEventListener("click", () => {
-    const total = [...selected].reduce((sum, i) => sum + foods[i].price, 0);
-    const hint = container.querySelector(".mini-hint");
-    if (selected.size < 2) return hint.textContent = "至少选两样，两个人才吃得饱。";
-    if (total > 30) return hint.textContent = "超预算啦！肉蟹煲留到下次正式约会。";
-    completeChapter(chapter);
-  });
-}
-
-function completeChapter(chapter) {
-  if (!state.completed.includes(chapter.id)) {
-    state.completed.push(chapter.id);
-    saveState();
-  }
-  revealLetter(chapter, true);
-}
-
-function revealLetter(chapter, newlyFound) {
-  modalContent.innerHTML = `
-    <div class="letter-reveal">
-      <div class="envelope">${newlyFound ? "💌" : "✉️"}</div>
-      <p class="eyebrow">${newlyFound ? "发现一封信" : "已收藏的信"}</p>
-      <h3 id="modal-title">${chapter.letterTitle}</h3>
-      <div class="letter-paper"><p>${chapter.letter}</p><span class="letter-sign">—— 永远爱你的他</span></div>
-      <button class="primary-button continue-button">${state.completed.length === 7 ? "前往生日终点" : "继续寻找下一封"}</button>
-    </div>`;
-  modalContent.querySelector(".continue-button").addEventListener("click", () => {
-    closeModal();
-    renderMap();
-    if (newlyFound) showToast(`已收藏：${chapter.letterTitle}`);
-    setTimeout(() => document.querySelector(`.map-node.current`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
-  });
-  openModal();
-}
-
-function renderJournal() {
-  modalContent.innerHTML = `
-    <div class="stage-emoji">💌</div>
-    <p class="eyebrow">MEMORY JOURNAL</p>
-    <h3 id="modal-title">回忆信箱</h3>
-    <p class="stage-subtitle">已经找到 ${state.completed.length} / 7 封信</p>
-    <div class="journal-list">${chapters.slice(0, 7).map((chapter, i) => {
-      const found = state.completed.includes(chapter.id);
-      return `<div class="journal-entry ${found ? "" : "locked"}" data-id="${chapter.id}"><b>${found ? chapter.letterTitle : `第${i + 1}封信 · 尚未找到`}</b><span>${found ? chapter.title : "继续沿着地图寻找"}</span></div>`;
-    }).join("")}</div>`;
-  modalContent.querySelectorAll(".journal-entry:not(.locked)").forEach(entry => entry.addEventListener("click", () => {
-    const chapter = chapters.find(item => item.id === entry.dataset.id);
-    revealLetter(chapter, false);
-  }));
-  openModal();
-}
-
-function renderFinal() {
-  const videoMarkup = `
-    <div class="video-frame">
-      <video id="birthday-video" controls playsinline preload="metadata" poster="assets/video-poster.jpg">
-        <source src="assets/birthday-video.mp4" type="video/mp4" />
-      </video>
-      <div class="video-placeholder" id="video-placeholder"><span>🎬</span><b>最后一份礼物</b><small>生日视频将在这里播放</small></div>
-    </div>`;
-  modalContent.innerHTML = `
-    <div class="final-card">
-      <div class="stage-emoji">🎂</div>
-      <p class="eyebrow">HAPPY BIRTHDAY · 10.25</p>
-      <h3 id="modal-title">生日快乐，${escapeHtml(state.playerName)}</h3>
-      <p class="stage-subtitle">七封信已经全部找到了</p>
-      ${videoMarkup}
-      <div class="final-quote">老婆，谢谢你陪我从弘大、明洞、航大，一路走到深圳，也走到今天。以前的我可能没能带你享受那些特别好的，但我会一直努力，把以后的每一个普通日子都过成值得收藏的回忆。<br /><br /><b>我好爱你。生日快乐，我的宝宝。</b></div>
-    </div>`;
-  const video = modalContent.querySelector("video");
-  const placeholder = modalContent.querySelector("#video-placeholder");
-  video.addEventListener("loadeddata", () => { placeholder.style.display = "none"; });
-  video.addEventListener("error", () => { video.style.display = "none"; });
-  openModal();
-}
-
-function openModal() {
-  modal.classList.add("open");
-  modal.setAttribute("aria-hidden", "false");
-  document.body.style.overflow = "hidden";
-  setTimeout(() => modal.querySelector(".modal-close")?.focus(), 50);
-}
-
-function closeModal() {
-  modal.classList.remove("open");
-  modal.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "";
-}
-
-function showToast(message) {
-  toast.textContent = message;
-  toast.classList.add("show");
-  clearTimeout(showToast.timer);
-  showToast.timer = setTimeout(() => toast.classList.remove("show"), 2300);
-}
-
-function escapeHtml(value) {
-  return value.replace(/[&<>'"]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char]));
-}
-
-document.querySelector("#start-button").addEventListener("click", () => {
-  state.started = true;
-  state.playerName = document.querySelector("#player-name").value.trim() || "Jenny";
-  saveState();
-  showScreen();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-});
-
-document.querySelector("#journal-button").addEventListener("click", renderJournal);
-document.querySelector("#reset-button").addEventListener("click", () => {
-  if (!window.confirm("要清空已经收集的信件，重新开始冒险吗？")) return;
-  state = { ...defaultState };
-  saveState();
-  showScreen();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-});
-document.querySelectorAll("[data-close-modal]").forEach(el => el.addEventListener("click", closeModal));
-document.addEventListener("keydown", event => { if (event.key === "Escape") closeModal(); });
-
-document.querySelector("#player-name").value = state.playerName;
-showScreen();
+ui.start.addEventListener("click",startGame);canvas.addEventListener("pointerdown",onPointer);ui.action.addEventListener("click",()=>game.nearby?.action());ui.dialogue.addEventListener("click",advanceDialogue);
+document.addEventListener("keydown",e=>{if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].includes(e.key)){game.keys.add(e.key);e.preventDefault();}if((e.key===" "||e.key==="Enter")&&game.nearby&&!ui.action.hidden)game.nearby.action();});document.addEventListener("keyup",e=>game.keys.delete(e.key));
+document.querySelectorAll("[data-ring]").forEach(button=>button.addEventListener("click",()=>chooseRing(button.dataset.ring)));document.querySelector("#return-button").addEventListener("click",()=>{ui.letterPanel.hidden=true;game.stage=4;transitionTo(()=>setProjectorRoom(true));});document.querySelector("#sound-button").addEventListener("click",e=>{e.currentTarget.textContent=e.currentTarget.textContent==="♪"?"×":"♪";});
+loadImages().then(()=>{ui.loading.style.display="none";}).catch(()=>{ui.loading.textContent="角色素材加载失败，请刷新重试。";});
