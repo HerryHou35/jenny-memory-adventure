@@ -22,3 +22,16 @@ The game bundles a small number of permissively licensed pixel-art props. They a
 - Pinned commit: `3694c6879e487c108f55677be7dd2ca75b07cc3b`
 - Files used: `keyYellow.png`, `film.png`, `2d/Block Pack/Retina/market_stallBlue.png`
 - License: CC0 1.0 / public domain, as documented by the repository.
+
+## Kenney Fish Pack 2.0
+
+- Source repository: https://github.com/Tiddybub/2d-assets/tree/main/characters/fish-pack
+- Original source: https://kenney.nl/assets/fish-pack
+- Files used: five fish sprites, three bubble sprites, and three seaweed sprites from `PNG/Double/`
+- License: CC0 1.0 / public domain. The bundled `License.txt` permits personal, educational, and commercial use without required attribution.
+
+## Murmur boids reference
+
+- Source: https://github.com/ctkrug/murmur
+- Technique referenced: Canvas flocking built from separation, alignment, and cohesion forces, adapted here for fish that scatter around Jenny and regroup afterward.
+- License: MIT.
