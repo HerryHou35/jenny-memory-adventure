@@ -11,7 +11,7 @@ const ui = {
 };
 
 const images = {};
-const imagePaths = { jenny: "assets/sprites/jenny-walk.png", herry: "assets/sprites/herry-walk.png", peanut: "assets/sprites/peanut-walk.png" };
+const imagePaths = { jenny: "assets/sprites/jenny-walk-v2.png", herry: "assets/sprites/herry-walk-v2.png", peanut: "assets/sprites/peanut-walk-v2.png" };
 const save = JSON.parse(localStorage.getItem("jenny-adventure-prototype") || "{}") || {};
 const game = { scene: "projector", stage: save.memoryOne ? 4 : 0, memoryOne: Boolean(save.memoryOne), running: false, lastTime: 0, keys: new Set(), dialogueQueue: [], dialogueCallback: null, nearby: null, fade: 0, transition: null };
 const player = { x: 480, y: 410, tx: 480, ty: 410, speed: 185, dir: 0, moving: false, frame: 1 };
@@ -28,8 +28,9 @@ function startGame() {
   requestAnimationFrame(loop);
 }
 
-function setProjectorRoom(restored) { game.scene = "projector"; player.x = player.tx = 480; player.y = player.ty = 420; peanut.x = 410; peanut.y = 430; peanut.trail=[]; game.stage = restored ? 4 : game.stage; ui.scene.textContent = "序章 · 坏掉的放映室"; updateObjective(); }
-function setHongdae() { game.scene = "hongdae"; game.stage = 10; player.x = player.tx = 470; player.y = player.ty = 430; peanut.x = 410; peanut.y = 445; peanut.trail=[]; ui.scene.textContent = "第一章 · 弘大镜子里的小姚明"; updateObjective(); say("花生", "这里就是故事开始的地方。去看看那面镜子，它好像还记得你们。", "🐶"); }
+function seedPeanutTrail() { peanut.trail = Array.from({ length: 16 }, (_, index) => ({ x: peanut.x + (player.x - peanut.x) * index / 15, y: peanut.y + (player.y - peanut.y) * index / 15 })); }
+function setProjectorRoom(restored) { game.scene = "projector"; player.x = player.tx = 480; player.y = player.ty = 420; peanut.x = 410; peanut.y = 430; seedPeanutTrail(); game.stage = restored ? 4 : game.stage; ui.scene.textContent = "序章 · 坏掉的放映室"; updateObjective(); }
+function setHongdae() { game.scene = "hongdae"; game.stage = 10; player.x = player.tx = 470; player.y = player.ty = 430; peanut.x = 400; peanut.y = 445; seedPeanutTrail(); ui.scene.textContent = "第一章 · 弘大镜子里的小姚明"; updateObjective(); say("花生", "这里就是故事开始的地方。去看看那面镜子，它好像还记得你们。", "🐶"); }
 
 function updateObjective() {
   let text = "";
@@ -56,7 +57,10 @@ function update(dt, time) {
   const vx = player.tx - player.x, vy = player.ty - player.y, d = Math.hypot(vx,vy); player.moving = d > 2;
   if (player.moving) { const step = Math.min(d, player.speed * dt); player.x += vx / d * step; player.y += vy / d * step; if (Math.abs(vx) > Math.abs(vy)) player.dir = vx < 0 ? 1 : 2; else player.dir = vy < 0 ? 3 : 0; player.frame = Math.floor(time / 150) % 4; } else player.frame = 1;
   player.x = Math.max(55, Math.min(905, player.x)); player.y = Math.max(285, Math.min(480, player.y));
-  peanut.trail.push({x:player.x, y:player.y}); if (peanut.trail.length > 28) peanut.trail.shift(); const follow = peanut.trail[0] || {x:player.x - 55, y:player.y + 15}; const pdx = follow.x - peanut.x, pdy = follow.y - peanut.y, pd = Math.hypot(pdx,pdy); peanut.moving = pd > 4;
+  const newestTrailPoint = peanut.trail[peanut.trail.length - 1];
+  if (!newestTrailPoint || Math.hypot(player.x - newestTrailPoint.x, player.y - newestTrailPoint.y) > 4) peanut.trail.push({x:player.x, y:player.y});
+  if (peanut.trail.length > 120) peanut.trail.shift();
+  const follow = peanut.trail[Math.max(0, peanut.trail.length - 16)] || {x:player.x - 65, y:player.y + 15}; const pdx = follow.x - peanut.x, pdy = follow.y - peanut.y, pd = Math.hypot(pdx,pdy); peanut.moving = pd > 4;
   if (peanut.moving) { const step = Math.min(pd, 150 * dt); peanut.x += pdx / pd * step; peanut.y += pdy / pd * step; if (Math.abs(pdx) > Math.abs(pdy)) peanut.dir = pdx < 0 ? 1 : 2; else peanut.dir = pdy < 0 ? 3 : 0; peanut.frame = Math.floor(time / 170) % 4; } else peanut.frame = 1;
   updateNearby();
 }
@@ -90,10 +94,10 @@ function drawHongdae(time){
   const restored=game.stage>=12;ctx.fillStyle=restored?"#163746":"#25333a";ctx.fillRect(0,0,960,540);ctx.fillStyle=restored?"#31596a":"#3d484c";ctx.fillRect(0,0,960,270);ctx.fillStyle=restored?"#455a61":"#444b4d";ctx.fillRect(0,270,960,270);
   ctx.fillStyle=restored?"#d9eff0":"#8a9595";ctx.fillRect(675,70,200,235);ctx.fillStyle=restored?"#80b6c3":"#748184";ctx.fillRect(690,85,170,205);ctx.strokeStyle="#f2ead7";ctx.lineWidth=7;ctx.strokeRect(675,70,200,235);
   ctx.fillStyle=restored?"#25576a":"#414d51";ctx.fillRect(38,155,240,165);ctx.fillStyle="#17282e";ctx.fillRect(55,175,205,120);for(let i=0;i<3;i++){ctx.fillStyle=["#e8c45f","#cdd9db","#e0a08d"][i];ctx.beginPath();ctx.arc(105+i*58,235,14,0,Math.PI*2);ctx.fill();}ctx.fillStyle="#fff2cf";ctx.font="bold 14px sans-serif";ctx.textAlign="center";ctx.fillText("RING",158,193);
-  if(game.stage>=11){herry.y=game.stage===11?355-Math.sin(time/120)*3:355;drawSprite(images.herry,herry,112,130);} if(game.stage===12) drawFilm(time);ctx.fillStyle="rgba(255,255,255,.5)";ctx.font="12px sans-serif";ctx.textAlign="left";ctx.fillText("HONGDAE · SEOUL",32,40);
+  if(game.stage>=11){herry.y=game.stage===11?355-Math.sin(time/120)*3:355;drawSprite(images.herry,herry,80,130);} if(game.stage===12) drawFilm(time);ctx.fillStyle="rgba(255,255,255,.5)";ctx.font="12px sans-serif";ctx.textAlign="left";ctx.fillText("HONGDAE · SEOUL",32,40);
 }
 function drawFilm(time){ctx.save();ctx.translate(480,335+Math.sin(time/250)*7);ctx.fillStyle="#f7c94a";ctx.fillRect(-22,-16,44,32);ctx.fillStyle="#1d3540";for(let x=-17;x<=12;x+=10){ctx.fillRect(x,-12,6,6);ctx.fillRect(x,6,6,6);}ctx.fillRect(-8,-7,16,14);ctx.restore();}
-function draw(time) { ctx.clearRect(0,0,960,540); if(game.scene==="projector") drawProjectorRoom(time); else drawHongdae(time); [{type:"peanut",e:peanut,w:72,h:78},{type:"jenny",e:player,w:104,h:122}].sort((a,b)=>a.e.y-b.e.y).forEach(a=>drawSprite(images[a.type],a.e,a.w,a.h)); if(game.fade>0){ctx.fillStyle=`rgba(255,248,220,${Math.min(1,game.fade)})`;ctx.fillRect(0,0,960,540);} }
+function draw(time) { ctx.clearRect(0,0,960,540); if(game.scene==="projector") drawProjectorRoom(time); else drawHongdae(time); [{type:"peanut",e:peanut,w:60,h:78},{type:"jenny",e:player,w:70,h:122}].sort((a,b)=>a.e.y-b.e.y).forEach(a=>drawSprite(images[a.type],a.e,a.w,a.h)); if(game.fade>0){ctx.fillStyle=`rgba(255,248,220,${Math.min(1,game.fade)})`;ctx.fillRect(0,0,960,540);} }
 function loop(time) { const dt=Math.min(.034,(time-game.lastTime)/1000||0);game.lastTime=time;update(dt,time);if(game.fade>0){if(game.transition){game.fade+=dt*2.5;if(game.fade>=1){const cb=game.transition;game.transition=null;cb();game.fade=.99;}}else{game.fade-=dt*3;if(game.fade<=0)game.fade=0;}}draw(time);requestAnimationFrame(loop); }
 
 ui.start.addEventListener("click",startGame);canvas.addEventListener("pointerdown",onPointer);ui.action.addEventListener("click",()=>game.nearby?.action());ui.dialogue.addEventListener("click",advanceDialogue);

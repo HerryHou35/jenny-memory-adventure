@@ -22,9 +22,9 @@ button { font: inherit; }
 h1 { margin: 0; font-size: clamp(44px, 10vw, 72px); line-height: 1; letter-spacing: -.07em; text-shadow: 4px 4px 0 #113b48; }
 .title-card > p:not(.eyebrow) { color: rgba(255,242,207,.68); line-height: 1.7; }
 .pixel-cast { display: flex; align-items: center; justify-content: center; gap: 12px; height: 118px; margin: 12px 0; }
-.mini-sprite { width: 78px; height: 108px; background-repeat: no-repeat; background-size: 400% 400%; background-position: 0 0; image-rendering: pixelated; }
-.jenny-mini { background-image: url("assets/sprites/jenny-walk.png"); }
-.peanut-mini { width: 72px; height: 82px; background-image: url("assets/sprites/peanut-walk.png"); }
+.mini-sprite { width: 62px; height: 108px; background-repeat: no-repeat; background-size: 400% 400%; background-position: 0 0; image-rendering: pixelated; }
+.jenny-mini { background-image: url("assets/sprites/jenny-walk-v2.png"); }
+.peanut-mini { width: 63px; height: 82px; background-image: url("assets/sprites/peanut-walk-v2.png"); }
 .heart { color: var(--coral); animation: beat 1.2s infinite; }
 .primary { padding: 14px 24px; color: #082833; border: 0; border-radius: 4px; background: var(--mint); box-shadow: 5px 5px 0 #2b796d; font-weight: 900; cursor: pointer; }
 .primary:active { transform: translate(3px,3px); box-shadow: 2px 2px 0 #2b796d; }
