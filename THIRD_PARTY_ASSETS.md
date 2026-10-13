@@ -43,6 +43,13 @@ The game bundles a small number of permissively licensed pixel-art props. They a
 - Use in this project: street proportions, storefront modules, pavement, windows, signs, benches, and urban lighting were used as composition references; the final Seoul street is redrawn in the game's own pixel-canvas style.
 - License: CC0 1.0 / public domain.
 
+## Kenney campus and sports references
+
+- Source repository: https://github.com/shorepine/kenney
+- Library referenced: Kenney's CC0 2D sprite, sports, furniture, UI, and icon collections.
+- Use in this project: café furniture proportions, laptop/book/drink silhouettes, basketball-court markings, hoop construction, and photo-booth framing were used as composition references; the final chapter is drawn in the game's own canvas pixel style.
+- License: CC0 1.0 / public domain.
+
 ## Twemoji shape references
 
 - Source: https://github.com/twitter/twemoji
