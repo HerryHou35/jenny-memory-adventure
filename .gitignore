@@ -1,5 +1,6 @@
 photos/
 art/
 site-package.tar.gz
+site-package-*.tar.gz
 .sites-runtime/
 __pycache__/
