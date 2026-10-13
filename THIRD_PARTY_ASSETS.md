@@ -35,3 +35,16 @@ The game bundles a small number of permissively licensed pixel-art props. They a
 - Source: https://github.com/ctkrug/murmur
 - Technique referenced: Canvas flocking built from separation, alignment, and cohesion forces, adapted here for fish that scatter around Jenny and regroup afterward.
 - License: MIT.
+
+## Kenney urban scene references
+
+- Source repository: https://github.com/GeorgeQLe/assets-2d-city
+- Packs referenced: Kenney Retro Urban Kit and Kenney RPG Urban Pack.
+- Use in this project: street proportions, storefront modules, pavement, windows, signs, benches, and urban lighting were used as composition references; the final Seoul street is redrawn in the game's own pixel-canvas style.
+- License: CC0 1.0 / public domain.
+
+## Twemoji shape references
+
+- Source: https://github.com/twitter/twemoji
+- Graphics referenced: soft ice cream and white cat emoji silhouettes. The in-game long ice cream and red-bow white cat doll are newly drawn pixel objects rather than copied character artwork.
+- Graphics license: CC BY 4.0, Copyright Twitter, Inc. and other contributors.
