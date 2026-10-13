@@ -46,5 +46,13 @@ The game bundles a small number of permissively licensed pixel-art props. They a
 ## Twemoji shape references
 
 - Source: https://github.com/twitter/twemoji
-- Graphics referenced: soft ice cream and white cat emoji silhouettes. The in-game long ice cream and red-bow white cat doll are newly drawn pixel objects rather than copied character artwork.
+- Graphics referenced: soft ice cream silhouette. The in-game long ice cream is newly drawn in the project's pixel-canvas style.
 - Graphics license: CC BY 4.0, Copyright Twitter, Inc. and other contributors.
+
+## Hello Kitty silhouette icon
+
+- Source repository: https://github.com/DennisSuitters/LibreICONS
+- Source file: `svg/libre-brand-hello-kitty.svg`
+- Use in this project: the subway doll uses the repository's explicitly named Hello Kitty silhouette, combined with a project-drawn red bow and toy body.
+- Repository license: MIT, Copyright (c) 2018 Diemen Design.
+- Character name and related rights remain with their respective rights holder; this is a personal, non-commercial birthday-game use.
