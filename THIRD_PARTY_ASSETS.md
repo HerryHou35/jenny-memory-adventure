@@ -63,3 +63,22 @@ The game bundles a small number of permissively licensed pixel-art props. They a
 - Use in this project: the subway doll uses the repository's explicitly named Hello Kitty silhouette, combined with a project-drawn red bow and toy body.
 - Repository license: MIT, Copyright (c) 2018 Diemen Design.
 - Character name and related rights remain with their respective rights holder; this is a personal, non-commercial birthday-game use.
+
+## OpenMoji food illustrations
+
+- Source: https://github.com/hfg-gmuend/openmoji
+- Pinned commit: `aeb8bb3a59e2de39c754ac79180c8131c906acea`
+- Files used: `1F363.svg` (sushi), `1F357.svg` (poultry leg), `1F370.svg` (shortcake), `1F34E.svg` (red apple), `1F95F.svg` (dumpling), and `1F9C3.svg` (beverage box).
+- Use in this project: selectable discounted foods, shopping-cart contents, and the plated Shenzhen dinner.
+- License: CC BY-SA 4.0. The full upstream license is bundled at `dist/assets/food/OPENMOJI-LICENSE.txt`.
+
+## Walmart 2008 logo
+
+- Source: https://commons.wikimedia.org/wiki/File:Walmart_logo_(2008).svg
+- File used: `dist/assets/food/walmart-logo.svg`.
+- License: Public domain as recorded by Wikimedia Commons. Walmart and the Spark symbol remain trademarks of Walmart Inc.; this is a personal, non-commercial birthday-game scene.
+
+## Shenzhen restaurant sign references
+
+- The in-game “蛙来哒” and “老船长肉蟹煲” signs are newly drawn pixel-canvas artwork rather than copied logo files, because no official asset with a clear open-source license was located.
+- The redraws use only broad storefront cues: a green frog and warm-red restaurant plaque for “蛙来哒”, and a captain-hat/crab motif on a dark blue plaque for “老船长肉蟹煲”.
