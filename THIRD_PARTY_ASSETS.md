@@ -68,7 +68,7 @@ The game bundles a small number of permissively licensed pixel-art props. They a
 
 - Source: https://github.com/hfg-gmuend/openmoji
 - Pinned commit: `aeb8bb3a59e2de39c754ac79180c8131c906acea`
-- Files used: `1F363.svg` (sushi), `1F357.svg` (poultry leg), `1F370.svg` (shortcake), `1F34E.svg` (red apple), `1F95F.svg` (dumpling), and `1F9C3.svg` (beverage box).
+- Files used: `1F363.svg` (sushi), `1F370.svg` (shortcake), `1F34E.svg` (red apple), `1F95F.svg` (dumpling), and `1F9C3.svg` (beverage box). The black-pepper roast duck is drawn specifically for this game in canvas code.
 - Use in this project: selectable discounted foods, shopping-cart contents, and the plated Shenzhen dinner.
 - License: CC BY-SA 4.0. The full upstream license is bundled at `dist/assets/food/OPENMOJI-LICENSE.txt`.
 
@@ -80,5 +80,7 @@ The game bundles a small number of permissively licensed pixel-art props. They a
 
 ## Shenzhen restaurant sign references
 
-- The in-game “蛙来哒” and “老船长肉蟹煲” signs are newly drawn pixel-canvas artwork rather than copied logo files, because no official asset with a clear open-source license was located.
-- The redraws use only broad storefront cues: a green frog and warm-red restaurant plaque for “蛙来哒”, and a captain-hat/crab motif on a dark blue plaque for “老船长肉蟹煲”.
+- 蛙来哒 source storefront: https://www.yidingdesign.com/detail-8-2.html
+- 老船长肉蟹煲 source storefront: https://www.openrice.com.cn/zh/shenzhen/r-%E8%80%81%E8%88%B9%E9%95%B7%E8%82%89%E8%9F%B9%E7%85%B2-%E6%A2%85%E6%9E%97-%E6%B5%99%E8%8F%9C-%E6%B5%99%E6%B1%9F-%E6%B5%B7%E9%AE%AE-r5999935
+- Use in this project: newly drawn low-resolution canvas interpretations of the actual storefront marks. 蛙来哒 preserves the white illuminated field, black wordmark, red entrance accent, `WALAIDA`, and `炭烧牛蛙`; 老船长 preserves the black storefront, circular captain emblem, white Chinese wordmark, `THE CAPTAIN`, and the real storefront slogan.
+- No source photograph is bundled in the published game.
