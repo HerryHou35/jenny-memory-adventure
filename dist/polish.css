@@ -1,5 +1,6 @@
 /* The cinema frame stays quiet so the memories remain the main attraction. */
 [hidden] { display:none !important; }
+#game-canvas.photo-album { image-rendering:auto; }
 body { background:#050f18; }
 button { touch-action:manipulation; }
 button:focus-visible,input:focus-visible { outline:3px solid #ffdf99; outline-offset:4px; }
