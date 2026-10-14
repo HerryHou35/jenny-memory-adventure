@@ -281,7 +281,7 @@ function drawStoreMirror(restored){
   ctx.save();ctx.beginPath();ctx.rect(mirror.x+5,mirror.y+5,mirror.w-10,mirror.h-10);ctx.clip();
   ctx.fillStyle="rgba(20,35,40,.18)";ctx.fillRect(mirror.x,mirror.y+154,mirror.w,84);
   ctx.strokeStyle="rgba(255,255,255,.16)";ctx.lineWidth=1;for(let y=mirror.y+168;y<mirror.y+238;y+=17){ctx.beginPath();ctx.moveTo(mirror.x,y);ctx.lineTo(mirror.x+mirror.w,y);ctx.stroke();}
-  if(game.stage>=11)drawReflectedSprite(images.herry,herry,72,118,mirror);
+  if(game.stage>=11||direction.ruler)drawReflectedSprite(images.herry,herry,72,118,mirror);
   drawReflectedSprite(images.peanut,peanut,52,68,mirror);drawReflectedSprite(images.jenny,player,64,111,mirror);
   const sheen=ctx.createLinearGradient(mirror.x,mirror.y,mirror.x+mirror.w,mirror.y);sheen.addColorStop(0,"rgba(255,255,255,.42)");sheen.addColorStop(.2,"rgba(255,255,255,.06)");sheen.addColorStop(.68,"rgba(255,255,255,0)");sheen.addColorStop(1,"rgba(255,255,255,.18)");ctx.fillStyle=sheen;ctx.fillRect(mirror.x,mirror.y,mirror.w,mirror.h);ctx.restore();
   ctx.strokeStyle=restored?"#d8fff0":"#d7ddd8";ctx.lineWidth=7;ctx.strokeRect(mirror.x,mirror.y,mirror.w,mirror.h);

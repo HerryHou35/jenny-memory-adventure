@@ -24,6 +24,12 @@ const direction = {
   photos:[], ending:null, lastCheckpoint:'', journalAt:0, audio:null,
   nextTone:0, pointer:null, runtimeTime:performance.now()
 };
+const originalPersist=persist;
+persist=function(){if(!direction.devPreview)originalPersist();};
+const originalStorageSet=storage.set;
+storage.set=function(key,value){if(direction.devPreview&&['jenny-films-v19','jenny-checkpoint-v19'].includes(key))return;originalStorageSet(key,value);};
+const originalStorageRemove=storage.remove;
+storage.remove=function(key){if(direction.devPreview&&['jenny-films-v19','jenny-checkpoint-v19'].includes(key))return;originalStorageRemove(key);};
 for(const [key,data] of Object.entries(direction.captures))loadCapture(key,data);
 // Real photographs are explicitly selected in ending.json when supplied.
 document.body.classList.toggle('reduce-motion',direction.reduced);
@@ -39,6 +45,7 @@ const originalTransition=transitionTo;
 transitionTo=function(callback){game.keys.clear();player.tx=player.x;player.ty=player.y;ui.action.hidden=true;originalTransition(()=>{callback();player.moving=false;herry.frame=1;const index=currentChapter();if(index>=0&&direction.chapterIndex!==index)chapterIntro(index);if(game.scene==='projector')direction.chapterIndex=-1;if(game.scene!=='hangdae'&&game.scene!=='ending'){$('cinema-caption').hidden=true;ui.play.classList.remove('cinematic');}});};
 const originalStart=startGame;
 startGame=function(continueSaved=false){
+  direction.devPreview=false;
   const checkpoint=continueSaved?storage.get('jenny-checkpoint-v19'):null;
   if(!continueSaved){storage.remove('jenny-checkpoint-v19');storage.remove('jenny-films-v19');direction.captures={};direction.captureImages={};direction.ending=null;}
   clearInteraction();direction.chapterIndex=-1;direction.ending=null;$('birthday-video').pause();$('birthday-video').hidden=true;$('video-resume').hidden=true;$('cinema-caption').hidden=true;ui.play.classList.remove('cinematic');
@@ -74,7 +81,7 @@ showMemoryLetter=function(number){
   ];ui.letterCopy.textContent=shortLetters[number-1];ui.letterPanel.setAttribute('aria-label',`第${number}张回忆胶片`);
 };
 const originalMirror=mirrorMoment;
-mirrorMoment=function(){player.x=player.tx=753;player.y=player.ty=410;herry.x=691;herry.y=410;herry.dir=0;player.dir=0;peanut.x=620;peanut.y=437;direction.ruler=true;direction.hiddenTaps=0;game.nearby=null;ui.action.hidden=true;$('ruler-controls').hidden=false;$('height-ruler').value=230;$('mirror-shutter').hidden=true;toast('188 和 178，原来只差十厘米');};
+mirrorMoment=function(){player.x=player.tx=753;player.y=player.ty=410;herry.x=691;herry.y=410;herry.dir=0;player.dir=0;herry.tiptoe=1;peanut.x=620;peanut.y=437;direction.ruler=true;direction.hiddenTaps=0;game.nearby=null;ui.action.hidden=true;$('ruler-controls').hidden=false;$('height-ruler').value=230;$('mirror-shutter').hidden=true;toast('小姚明又偷偷踮脚了 · 把尺拉回 188');};
 $('height-ruler').oninput=()=>{const v=Number($('height-ruler').value);herry.tiptoe=Math.max(0,(v-188)/42);$('mirror-shutter').hidden=v>190;};
 $('mirror-shutter').onclick=()=>{direction.ruler=false;$('ruler-controls').hidden=true;originalMirror();};
 takeEnglishCard=function(word){game.stage+=1;updateObjective();toast(`拿起 ${word} · 可以拖到日历上`);sound('paper');};
@@ -117,10 +124,13 @@ const oldEnglish=drawEnglishClass;
 drawEnglishClass=function(time){oldEnglish(time);ctx.save();ctx.fillStyle='#f3e6c9';ctx.fillRect(743,42,182,248);ctx.strokeStyle='#8f7453';ctx.lineWidth=5;ctx.strokeRect(743,42,182,248);ctx.fillStyle='#35554f';ctx.textAlign='center';ctx.font='bold 16px Arial';ctx.fillText('THIS WEEK',834,72);const filled=game.stage>=26?7:game.stage>=24?4:game.stage>=22?2:0;const days=['MON','TUE','WED','THU','FRI','SAT','SUN'];for(let i=0;i<7;i++){const y=90+i*26;ctx.fillStyle='#e4d7ba';ctx.fillRect(755,y,158,23);ctx.fillStyle='#657168';ctx.font='bold 10px Arial';ctx.textAlign='left';ctx.fillText(days[i],763,y+15);if(i<filled){ctx.strokeStyle='#d77987';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(871,y+12,30,10,-.05,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#b35a6b';ctx.font='10px sans-serif';ctx.fillText('见宝宝',850,y+15);}}ctx.restore();};
 // Use the 188:178 ratio at every scale, including photos and tiny cutscenes.
 const oldSprite=drawSprite;
+const originalReflection=drawReflectedSprite;
+drawReflectedSprite=function(image,entity,width,height,mirror){const lifted=image===images.herry?Math.min(3,herry.tiptoe||0)*6:0;originalReflection(image,lifted?{...entity,y:entity.y-lifted/.12}:entity,width,height,mirror);};
 let spriteQueue=null;
 drawSprite=function(image,entity,width,height,yOffset=0){
   if(spriteQueue&&[player,herry,peanut].includes(entity)){spriteQueue.push({image,entity:{...entity},original:entity,width,height,yOffset});return;}
   if((image===images.herry||image===images.herryYellow)&&width===80)height=129;
+  if(game.scene==='hongdae'&&image===images.herry)yOffset-=Math.min(3,herry.tiptoe||0)*6;
   ctx.save();if(entity===player||entity===herry||entity===peanut){ctx.fillStyle='#07131c40';ctx.beginPath();ctx.ellipse(entity.x,entity.y-2,width*.25,5,0,0,Math.PI*2);ctx.fill();}oldSprite(image,entity,width,height,yOffset);ctx.restore();
 };
 const oldPinkCoat=drawPinkSkiCoat;
@@ -134,7 +144,6 @@ draw=function(time){
   spriteQueue=[];oldDraw(time);const queue=spriteQueue;spriteQueue=null;
   if(game.scene==='hangdae'&&game.hangdae?.area==='road'&&game.stage===96&&!game.hangdae.jennyEntered)queue.push({image:images.jenny,entity:{...player},original:player,width:70,height:122,yOffset:0});
   if(direction.ruler)queue.push({image:images.herry,entity:{...herry},original:herry,width:80,height:129,yOffset:0});
-  if(direction.ruler){const dog=queue.find(q=>q.original===peanut);if(dog){dog.entity.x=player.x-90;dog.entity.y=player.y-(Number($('height-ruler').value)>204?Math.abs(Math.sin(time/180))*18:0);}}
   const cinema=game.photoOpen||game.scene==='campus'&&game.stage===68;
   if(!cinema){queue.filter(x=>!x.coat&&!x.jacket).sort((a,b)=>a.entity.y-b.entity.y).forEach(item=>{ctx.save();if(game.scene==='hangdae'&&item.original===player&&game.stage===96)ctx.globalAlpha=Math.max(0,1-(time-game.hangdae.dormStart)/1900);drawSprite(item.image,item.entity,item.width,item.height,item.yOffset);queue.filter(q=>(q.coat||q.jacket)&&q.original===item.original).forEach(q=>q.coat?drawPinkSkiCoat(q.entity,q.alpha):drawCoupleJacket(q.entity,q.scale));ctx.restore();});}
   if(game.scene==='hongdae'){drawShoeWall();if(direction.ruler)drawHeightRuler(time);}
@@ -310,3 +319,38 @@ function drawTitle(time) {
   requestAnimationFrame(drawTitle);
 }
 requestAnimationFrame(drawTitle);
+
+// This switch is absent on the hosted birthday site: Jenny never sees the
+// chapter list. Preview jumps run in memory and do not change the normal save.
+if(['localhost','127.0.0.1','[::1]','::1'].includes(location.hostname)||location.protocol==='file:'){
+  const toggle=document.createElement('button');toggle.className='dev-jump-toggle';toggle.id='dev-jump-toggle';toggle.textContent='开发 · 跳到某一幕';toggle.setAttribute('aria-expanded','false');
+  const panel=document.createElement('section');panel.id='dev-jump-panel';panel.className='dev-jump-panel';panel.hidden=true;panel.setAttribute('aria-label','开发场景跳转');
+  const note=document.createElement('p');note.textContent='直接预览场景，不清空或覆盖正式存档。这个菜单只在本地开发显示。';
+  const grid=document.createElement('div');grid.className='dev-jump-grid';panel.append(note,grid);document.body.append(toggle,panel);
+  toggle.onclick=()=>{panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden));};
+  const scenes=[
+    ['放映室',()=>{game.stage=0;setProjectorRoom(false);}],
+    ['弘大 · 身高镜子',()=>{CHAPTERS[0].enter();clearInteraction();mirrorMoment();}],
+    ['弘大 · 戒指小摊',()=>{CHAPTERS[0].enter();game.stage=11;player.x=player.tx=160;player.y=player.ty=405;herry.x=235;herry.y=405;herry.tiptoe=0;}],
+    ['假英语课堂',()=>CHAPTERS[1].enter()],
+    ['明洞 · 浅粉色大衣',()=>CHAPTERS[2].enter()],
+    ['海洋馆',()=>CHAPTERS[3].enter()],
+    ['首尔日常街区',()=>CHAPTERS[4].enter()],
+    ['校园 · 咖啡店',()=>CHAPTERS[5].enter()],
+    ['校园 · 篮球场',()=>{setCampusCafe();setCampusCourt();}],
+    ['篮球 · Herry 投篮',()=>{setCampusCafe();setCampusCourt();clearInteraction();startHerryShot();}],
+    ['人生四格',()=>{setCampusCafe();setCampusCourt();clearInteraction();game.campus.couple=true;startPhotoBooth();}],
+    ['深圳 · 沃尔玛',()=>CHAPTERS[6].enter()],
+    ['深圳 · 摆晚餐',()=>{setShenzhenMarket();game.shenzhen.selected=game.shenzhen.foods.slice(0,3).map((f,index)=>({...f,index}));setShenzhenHome();}],
+    ['KAU · 站台送花',()=>CHAPTERS[7].enter()],
+    ['KAU · 宿舍夜路',()=>{setHangdaeStation();setHangdaeRoad();}],
+    ['KAU · 楼下告别',()=>{setHangdaeStation();setHangdaeRoad();clearInteraction();game.hangdae.lamps.fill(true);player.x=player.tx=855;player.y=player.ty=435;herry.x=782;herry.y=435;peanut.x=720;peanut.y=450;enterDorm();}],
+    ['终章 · 旋转蒙太奇',()=>startEnding()]
+  ];
+  for(const [label,setup]of scenes){const button=document.createElement('button');button.type='button';button.textContent=label;grid.append(button);button.onclick=()=>{
+    if(!images.jenny||!images.herry||!images.peanut){note.textContent='角色素材还在加载，稍等一下再跳转。';return;}
+    direction.devPreview=true;clearInteraction();game.fade=0;game.transition=null;game.running=true;direction.ending=null;direction.chapterIndex=-1;herry.tiptoe=0;player.speed=185;$('birthday-video').pause();$('birthday-video').hidden=true;$('video-resume').hidden=true;$('cinema-caption').hidden=true;$('restart-panel').hidden=true;ui.title.classList.remove('active');ui.play.classList.add('active');ui.play.classList.remove('cinematic');
+    setup();seedPeanutTrail();updateObjective();if(!game.loopStarted){game.loopStarted=true;requestAnimationFrame(loop);}panel.hidden=true;toggle.setAttribute('aria-expanded','false');toast('开发预览 · '+label);
+  };}
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'){panel.hidden=true;toggle.setAttribute('aria-expanded','false');}});
+}

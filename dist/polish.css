@@ -104,3 +104,10 @@ h1 span { color:#9be1c5; }
 }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none !important; } }
 body.reduce-motion *,body.reduce-motion *::before { animation:none !important; }
+.dev-jump-toggle { position:fixed; z-index:65; right:12px; top:12px; padding:9px 13px; border:1px dashed #d5c08c; border-radius:3px; color:#f0e1bb; background:#102b36ef; font-size:12px; cursor:pointer; }
+.dev-jump-panel { position:fixed; z-index:64; right:12px; top:56px; width:min(380px,calc(100vw - 24px)); max-height:calc(100dvh - 76px); overflow:auto; padding:18px; border:1px solid #6d9c91; border-radius:4px; background:#102633f5; box-shadow:0 16px 50px #0008; }
+.dev-jump-panel p { margin:0 0 12px; color:#adc7be; font-size:11px; line-height:1.7; }
+.dev-jump-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.dev-jump-grid button { padding:10px 8px; border:1px solid #47616a; border-radius:2px; color:#f0e4c4; background:#244450; text-align:left; cursor:pointer; font-size:12px; }
+.dev-jump-grid button:hover { border-color:#a4d7be; background:#315961; }
+.dev-jump-toggle[aria-expanded='true'] { color:#12312f; background:#a8d8bd; }
