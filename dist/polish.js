@@ -128,7 +128,7 @@ drawSprite=function(image,entity,width,height,yOffset=0){
 const oldPinkCoat=drawPinkSkiCoat;
 drawPinkSkiCoat=function(entity,alpha=1){if(spriteQueue){spriteQueue.push({coat:true,entity:{...entity},original:entity,alpha});return;}ctx.save();ctx.globalAlpha=alpha;ctx.translate(entity.x,entity.y);const dir=entity.dir;ctx.fillStyle='#f1b1c5';ctx.beginPath();ctx.moveTo(-12,-84);ctx.lineTo(-22,-74);ctx.lineTo(-24,-18);ctx.lineTo(24,-18);ctx.lineTo(22,-74);ctx.lineTo(12,-84);ctx.closePath();ctx.fill();ctx.fillStyle='#ffd6df';ctx.fillRect(-16,-76,32,9);ctx.fillStyle='#c8809d';ctx.fillRect(-20,-45,40,2);ctx.fillRect(-20,-28,40,2);ctx.fillStyle='#ffe4e8';if(dir!==3){ctx.fillRect(dir===1?-10:dir===2?8:-1,-72,3,51);ctx.fillRect(-17,-36,10,3);ctx.fillRect(8,-36,10,3);}ctx.fillStyle='#e9a4ba';ctx.fillRect(-28,-70,9,42);ctx.fillRect(20,-70,9,42);ctx.restore();};
 const oldJacket=drawCoupleJacket;
-drawCoupleJacket=function(entity,scale=1){if(spriteQueue){spriteQueue.push({jacket:true,entity:{...entity},original:entity,scale});return;}oldJacket(entity,scale);};
+drawCoupleJacket=function(entity,scale=1){if(spriteQueue&&[player,herry].includes(entity)){spriteQueue.push({jacket:true,entity:{...entity},original:entity,scale});return;}oldJacket(entity,scale);};
 const oldDraw=draw;
 draw=function(time){
   if(game.scene==='ending'){drawEnding(time);return;}
