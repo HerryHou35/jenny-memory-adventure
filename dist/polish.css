@@ -1,0 +1,99 @@
+/* The cinema frame stays quiet so the memories remain the main attraction. */
+[hidden] { display:none !important; }
+body { background:#050f18; }
+button { touch-action:manipulation; }
+button:focus-visible,input:focus-visible { outline:3px solid #ffdf99; outline-offset:4px; }
+#game-shell { min-height:100dvh; background:radial-gradient(ellipse at 50% 40%,#143947,#050f18 78%); }
+.overlay-screen { padding:clamp(20px,5vw,80px); overflow:auto; background:#071724; }
+.overlay-screen::before { z-index:1; opacity:.015; background-size:5px 5px; pointer-events:none; }
+#title-art { position:absolute; width:100%; height:100%; inset:0; object-fit:cover; image-rendering:pixelated; opacity:.9; }
+.title-card { width:min(100%,660px); margin-right:auto; padding:36px 0; text-align:left; border:0; border-radius:0; box-shadow:none; background:linear-gradient(90deg,rgba(6,20,30,.85),rgba(6,20,30,.45) 72%,transparent); }
+.title-card .eyebrow { color:#eccc8d; font-size:12px; letter-spacing:.22em; margin-bottom:24px; }
+h1 { font-weight:850; font-size:clamp(42px,7vw,88px); line-height:1.15; letter-spacing:-.055em; text-shadow:0 5px 0 #0a2832; }
+h1 span { color:#9be1c5; }
+.title-card>p:not(.eyebrow) { margin:24px 0; color:#bbc9c6; font-size:15px; line-height:1.9; }
+.pixel-cast { justify-content:flex-start; height:80px; gap:18px; margin:18px 0 30px; }
+.mini-sprite { height:78px; width:48px; background-position:33.333% 0; }
+.peanut-mini { height:60px; width:45px; }
+.start-actions { justify-content:inherit; gap:14px; }
+.title-card small { margin-top:26px; font-size:11px; color:#899e9f; }
+.primary { border-radius:2px; background:#98e0c1; padding:15px 27px; box-shadow:4px 4px 0 #365a53; }
+.play-screen { width:min(100vw,calc((100dvh - 112px)*16/9),1320px); padding:12px; }
+.hud { padding:8px 2px 16px; min-height:68px; gap:16px; }
+.scene-label { font-size:11px; color:#96c4b3; letter-spacing:.05em; }
+.objective { font-size:14px; font-weight:600; color:#f0e1c0; margin-top:5px; }
+.hud-actions { gap:5px; flex-shrink:0; }
+.text-button,.icon-button { border-color:#2b4148; background:rgba(17,41,48,.6); font-size:11px; font-weight:500; border-radius:2px; }
+.icon-button { width:34px; height:34px; }
+.text-button { padding:9px 10px; }
+#canvas-wrap { border:1px solid #435659; border-radius:3px; box-shadow:0 30px 90px #0008; }
+.controls-help { color:#7c9299; padding-top:12px; }
+.action-button { border:1px solid #fff0c5; border-radius:2px; color:#142e33; background:#f2d58c; font-size:13px; right:18px; bottom:18px; box-shadow:3px 3px 0 #06152099; }
+.dialogue { bottom:14px; left:14px; right:14px; min-height:80px; border:1px solid #e3d3a6; background:#f7ecd2f5; border-radius:3px; font-size:14px; box-shadow:4px 4px 0 #0004; }
+.speaker-avatar { background:#c5dbca; font-size:27px; }
+.modal { overflow:auto; padding:24px; }
+.modal-card { border:1px solid #c8b996; border-radius:2px; background:#f7ecd5; padding:32px; max-height:calc(100dvh - 48px); overflow:auto; }
+.modal-card h2 { font-size:27px; letter-spacing:-.025em; }
+.modal-card .secondary { color:#42605a; border-color:#b9c4b6; background:#e9e5d5; }
+.letter-copy { border:0; padding:20px 0; background:transparent; font-size:17px; line-height:1.95 !important; color:#425752 !important; }
+.film-icon { width:52px; height:52px; border:3px dashed #3c574e; background:#dec78c; animation:none; }
+.film-icon img { width:30px; height:30px; }
+.ring-options button { min-height:135px; background:#fffaf0; border:1px solid #c9c1a6; }
+.inventory { position:absolute; z-index:6; top:12px; left:12px; display:flex; align-items:center; gap:8px; pointer-events:none; }
+.inventory::before { content:'随身小物'; color:#accbc5; font-size:10px; letter-spacing:.1em; }
+.inventory button { pointer-events:auto; cursor:grab; padding:8px 12px; border:1px solid #c4c08b; border-radius:2px; color:#193d3d; background:#ece0b6f0; box-shadow:3px 3px 0 #0004; font-size:12px; touch-action:none; }
+.inventory button.dragging { cursor:grabbing; }
+.drag-ghost { position:fixed; z-index:70; pointer-events:none; padding:12px 20px; border:2px solid #9ae0c6; border-radius:3px; color:#17353b; background:#fff0cb; box-shadow:4px 4px 0 #0005; transform:translate(-50%,-50%) rotate(-5deg); font-weight:700; }
+.chapter-intro { position:absolute; z-index:12; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center; background:linear-gradient(0deg,#061823e8,#06182375); pointer-events:none; animation:chapterEnter 2.4s ease both; }
+.chapter-intro p { color:#90cbb6; font-size:11px; letter-spacing:.35em; }
+.chapter-intro h2 { font-size:clamp(21px,3vw,40px); color:#fff0cb; margin:12px 0 20px; font-weight:600; letter-spacing:.12em; }
+.chapter-intro span { font-size:10px; letter-spacing:.25em; color:#bdc9c3; }
+.toast { position:absolute; z-index:15; top:16%; left:50%; transform:translateX(-50%); padding:9px 16px; color:#f2e8c7; border:1px solid #749488; background:#102c36ec; font-size:12px; white-space:nowrap; pointer-events:none; }
+.cinema-caption { position:absolute; z-index:9; left:12%; right:12%; bottom:9%; text-align:center; color:#fff0d1; font-size:clamp(12px,1.7vw,20px); font-weight:500; line-height:1.85; white-space:pre-line; text-shadow:0 2px 8px #000; pointer-events:none; }
+.ruler-controls { position:absolute; z-index:10; left:5%; top:12%; width:40%; padding:16px; background:#0a2535e8; border:1px solid #7fbea8; display:grid; gap:16px; }
+.ruler-controls label { font-size:12px; color:#e4dec4; line-height:1.7; }
+.ruler-controls input { width:100%; accent-color:#8fe0bf; min-height:32px; }
+.ruler-controls .primary { font-size:12px; padding:10px; }
+#birthday-video { position:absolute; z-index:10; inset:0; width:100%; height:100%; object-fit:contain; background:#071822; }
+#video-resume { z-index:11; }
+.play-screen.cinematic .hud { opacity:.45; }
+.play-screen.cinematic .controls-help { visibility:hidden; }
+.play-screen.cinematic #inventory { display:none; }
+@keyframes chapterEnter { 0%{opacity:0;letter-spacing:.1em} 18%,70%{opacity:1} 100%{opacity:0} }
+@media (max-height:540px) and (orientation:landscape) {
+  .play-screen { width:min(100vw,calc((100dvh - 60px)*16/9)); padding:4px; }
+  .hud { min-height:43px; padding:2px 0 6px; }
+  .objective { font-size:11px; margin-top:2px; }
+  .scene-label { font-size:9px; }
+  .controls-help { padding-top:4px; font-size:9px; }
+  .dialogue { min-height:60px; padding:9px 30px 9px 10px; font-size:12px; bottom:8px; }
+  .speaker-avatar { height:36px; flex-basis:36px; font-size:23px; }
+  .action-button { padding:9px 12px; font-size:12px; right:10px; bottom:10px; }
+  .title-card { padding:10px 0; }
+  .title-card .eyebrow { margin-bottom:10px; }
+  .title-card>p:not(.eyebrow) { margin:12px 0; font-size:12px; }
+  .pixel-cast { display:none; }
+  .title-card small { margin-top:12px; }
+}
+@media (orientation:portrait) and (max-width:700px) {
+  body { overflow:auto; }
+  .play-screen { width:100vw; padding:8px; }
+  .hud { gap:8px; align-items:flex-start; }
+  .hud-actions { max-width:140px; flex-wrap:wrap; justify-content:flex-end; }
+  .dialogue { position:relative; inset:auto; min-height:95px; margin-top:0; font-size:13px; border-width:1px; box-shadow:none; }
+  #canvas-wrap { overflow:visible; aspect-ratio:auto; }
+  #game-canvas { aspect-ratio:16/9; height:auto; }
+  .action-button { position:relative; display:block; margin:12px 12px 12px auto; right:auto; bottom:auto; }
+  .photo-controls { position:relative; inset:auto; margin:8px; }
+  .chapter-intro { bottom:auto; aspect-ratio:16/9; }
+  .cinema-caption { top:115px; bottom:auto; font-size:12px; }
+  .ruler-controls { width:53%; padding:10px; top:8%; }
+  .ruler-controls label { font-size:10px; }
+  .title-card { margin:0; align-self:start; padding-top:12vh; background:transparent; }
+  #title-art { opacity:.5; object-position:70% 50%; }
+  .ring-options { grid-template-columns:repeat(3,1fr); }
+  .ring-options img { width:44px; height:44px; }
+  .ring-options small { display:none; }
+}
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none !important; } }
+body.reduce-motion *,body.reduce-motion *::before { animation:none !important; }
