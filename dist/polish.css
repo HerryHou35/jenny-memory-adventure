@@ -7,16 +7,18 @@ button:focus-visible,input:focus-visible { outline:3px solid #ffdf99; outline-of
 .overlay-screen { padding:clamp(20px,5vw,80px); overflow:auto; background:#071724; }
 .overlay-screen::before { z-index:1; opacity:.015; background-size:5px 5px; pointer-events:none; }
 #title-art { position:absolute; width:100%; height:100%; inset:0; object-fit:cover; image-rendering:pixelated; opacity:.9; }
-.title-card { width:min(100%,660px); margin-right:auto; padding:36px 0; text-align:left; border:0; border-radius:0; box-shadow:none; background:linear-gradient(90deg,rgba(6,20,30,.85),rgba(6,20,30,.45) 72%,transparent); }
-.title-card .eyebrow { color:#eccc8d; font-size:12px; letter-spacing:.22em; margin-bottom:24px; }
-h1 { font-weight:850; font-size:clamp(42px,7vw,88px); line-height:1.15; letter-spacing:-.055em; text-shadow:0 5px 0 #0a2832; }
+.title-card { width:min(100%,640px); margin:0; padding:20px 0; text-align:center; border:0; border-radius:0; box-shadow:none; background:transparent; }
+.title-card .eyebrow { color:#dfc991; font-size:11px; letter-spacing:.22em; margin-bottom:20px; }
+h1 { font-weight:850; font-size:clamp(42px,5.5vw,70px); line-height:1.18; letter-spacing:-.055em; text-shadow:0 5px 0 #0a2832; }
 h1 span { color:#9be1c5; }
-.title-card>p:not(.eyebrow) { margin:24px 0; color:#bbc9c6; font-size:15px; line-height:1.9; }
+.title-card>p:not(.eyebrow) { margin:20px 0 0; color:#a9beba; font-size:14px; line-height:1.9; }
+#title-cast-art { display:block; width:min(320px,75vw); height:auto; margin:12px auto 22px; image-rendering:pixelated; }
 .pixel-cast { justify-content:flex-start; height:80px; gap:18px; margin:18px 0 30px; }
 .mini-sprite { height:78px; width:48px; background-position:33.333% 0; }
 .peanut-mini { height:60px; width:45px; }
 .start-actions { justify-content:inherit; gap:14px; }
-.title-card small { margin-top:26px; font-size:11px; color:#899e9f; }
+.title-card .start-actions { justify-content:center; }
+.title-card small { margin-top:22px; font-size:11px; color:#81979c; }
 .primary { border-radius:2px; background:#98e0c1; padding:15px 27px; box-shadow:4px 4px 0 #365a53; }
 .play-screen { width:min(100vw,calc((100dvh - 112px)*16/9),1320px); padding:12px; }
 .hud { padding:8px 2px 16px; min-height:68px; gap:16px; }
@@ -69,9 +71,12 @@ h1 span { color:#9be1c5; }
   .dialogue { min-height:60px; padding:9px 30px 9px 10px; font-size:12px; bottom:8px; }
   .speaker-avatar { height:36px; flex-basis:36px; font-size:23px; }
   .action-button { padding:9px 12px; font-size:12px; right:10px; bottom:10px; }
-  .title-card { padding:10px 0; }
+  .title-card { padding:0; }
+  .title-card h1 { font-size:36px; }
   .title-card .eyebrow { margin-bottom:10px; }
   .title-card>p:not(.eyebrow) { margin:12px 0; font-size:12px; }
+  #title-cast-art { width:205px; margin:0 auto 10px; }
+  .title-card .primary,.title-card .secondary { padding:10px 18px; font-size:12px; }
   .pixel-cast { display:none; }
   .title-card small { margin-top:12px; }
 }
@@ -89,8 +94,10 @@ h1 span { color:#9be1c5; }
   .cinema-caption { top:115px; bottom:auto; font-size:12px; }
   .ruler-controls { width:53%; padding:10px; top:8%; }
   .ruler-controls label { font-size:10px; }
-  .title-card { margin:0; align-self:start; padding-top:12vh; background:transparent; }
-  #title-art { opacity:.5; object-position:70% 50%; }
+  .title-card { margin:0; align-self:center; padding:0; background:transparent; }
+  .title-card h1 { font-size:clamp(38px,11vw,52px); }
+  .title-card>p:not(.eyebrow) { font-size:12px; }
+  #title-art { opacity:.65; object-position:50% 50%; }
   .ring-options { grid-template-columns:repeat(3,1fr); }
   .ring-options img { width:44px; height:44px; }
   .ring-options small { display:none; }
