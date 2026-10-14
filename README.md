@@ -11,7 +11,8 @@
 把素材放在 `dist/assets/`：
 
 - `birthday-video.mp4`：最终生日视频，推荐 H.264 编码的 MP4。在 `dist/assets/ending.json` 把 `video` 设置为 `assets/birthday-video.mp4`。
-- 没有生日视频时，终章使用已提供的真实合照与生日字幕；不会请求不存在的视频或显示损坏的播放器。
+- 真人照片请先整理好，再将站内图片路径按顺序写入 `dist/assets/ending.json` 的 `photos` 数组。当前数组为空，不自动选用角色参考照。
+- 蒙太奇先使用像素角色截图旋转、交叠穿梭，整体逐渐淡出后再渐显真人照片，最后接视频。素材未提供时，以像素合影和生日字幕占位。
 
 后续照片可以按章节命名后加入，例如 `hongdae-01.jpg`、`aquarium-01.jpg`、`campus-01.jpg`。
 
