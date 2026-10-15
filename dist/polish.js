@@ -1,9 +1,9 @@
 /* A small direction layer: chapter mechanics live in app.js; staging, replay,
    the film archive and the ending share one clock and one saved experience. */
 const CHAPTERS = [
-  { key:'memoryOne', title:'镜子里的小姚明', place:'HONGDAE · SEOUL', scene:'hongdae', enter:setHongdae, ink:'#88c8bd' },
-  { key:'memoryTwo', title:'最认真的假英语课', place:'STUDY, AGAIN, TOMORROW', scene:'english', enter:setEnglishClass, ink:'#e0c989' },
-  { key:'memoryThree', title:'明洞的浅粉色大衣', place:'MYEONGDONG · A PINK COAT', scene:'myeongdong', enter:setMyeongdong, ink:'#e7abb9' },
+  { key:'memoryOne', title:'镜子里的小姚明', introTitle:'我们的第一次见面', place:'HONGDAE · SEOUL', scene:'hongdae', enter:setHongdae, ink:'#88c8bd' },
+  { key:'memoryTwo', title:'最认真的假英语课', introTitle:'认真学英语的我们', place:'STUDY, AGAIN, TOMORROW', scene:'english', enter:setEnglishClass, ink:'#e0c989' },
+  { key:'memoryThree', title:'明洞的浅粉色大衣', introTitle:'明洞的邂逅', place:'MYEONGDONG · A PINK COAT', scene:'myeongdong', enter:setMyeongdong, ink:'#e7abb9' },
   { key:'memoryFour', title:'第一次约会的蓝', place:'OUR FIRST DATE · AQUARIUM', scene:'aquarium', enter:setAquarium, ink:'#87cadc' },
   { key:'memoryFive', title:'日常里的每个一等奖', place:'SEOUL · LITTLE THINGS', scene:'daily', enter:setDailyStreet, ink:'#e5c271' },
   { key:'memorySix', title:'很普通，很喜欢', place:'COFFEE, BASKETBALL & US', scene:'campus', enter:setCampusCafe, ink:'#a6c4a2' },
@@ -24,6 +24,28 @@ const direction = {
   photos:[], ending:null, lastCheckpoint:'', journalAt:0, audio:null,
   nextTone:0, pointer:null, runtimeTime:performance.now()
 };
+const pixelMusic={audio:new Audio('assets/pixel-bgm.ogg'),pending:false,blocked:false,failed:false,startedAt:0};
+pixelMusic.audio.preload='auto';pixelMusic.audio.loop=true;pixelMusic.audio.volume=0;
+pixelMusic.audio.onerror=()=>{pixelMusic.failed=true;$('pixel-music-resume')?.remove();};
+function pixelMusicActive(){return game.running&&ui.play.classList.contains('active')&&game.soundOn&&!document.hidden&&(game.scene!=='ending'||direction.ending?.media==='montage');}
+function requestPixelMusic(){
+  if(pixelMusic.pending||pixelMusic.failed)return;pixelMusic.pending=true;
+  pixelMusic.audio.play().then(()=>{pixelMusic.pending=false;pixelMusic.blocked=false;$('pixel-music-resume')?.remove();if(!pixelMusicActive())pixelMusic.audio.pause();}).catch(()=>{
+    pixelMusic.pending=false;if(!pixelMusicActive()||pixelMusic.failed)return;pixelMusic.blocked=true;
+    let button=$('pixel-music-resume');if(!button){button=document.createElement('button');button.id='pixel-music-resume';button.className='ending-music-resume';button.textContent='♪ 播放配乐';$('canvas-wrap').appendChild(button);}
+    button.onclick=()=>{pixelMusic.blocked=false;pixelMusic.startedAt=direction.now;requestPixelMusic();};
+  });
+}
+function syncPixelMusic(time){
+  if(pixelMusic.failed)return;
+  if(!pixelMusicActive()){pixelMusic.audio.pause();pixelMusic.startedAt=0;$('pixel-music-resume')?.remove();pixelMusic.blocked=false;return;}
+  if(!pixelMusic.startedAt)pixelMusic.startedAt=time||performance.now();
+  const fade=game.scene==='ending'?Math.max(0,Math.min(1,(48-(time-direction.ending.start)/1000)/4)):1;
+  pixelMusic.audio.volume=.45*Math.min(1,Math.max(0,(time-pixelMusic.startedAt)/1200))*fade;
+  if(pixelMusic.audio.paused&&!pixelMusic.pending&&!pixelMusic.blocked)requestPixelMusic();
+}
+$('sound-button').addEventListener('click',()=>syncPixelMusic(direction.now));
+document.addEventListener('visibilitychange',()=>syncPixelMusic(direction.now));
 const originalPersist=persist;
 persist=function(){if(!direction.devPreview)originalPersist();};
 const originalStorageSet=storage.set;
@@ -38,8 +60,8 @@ function toast(copy){$('toast').textContent=copy;$('toast').hidden=false;directi
 function loadCapture(key,data){const img=new Image();img.onload=()=>direction.captureImages[key]=img;img.src=data;}
 function blocked(){return !game.running||game.fade>0||!ui.dialogue.hidden||!ui.letterPanel.hidden||!ui.ringPanel.hidden||!ui.photoControls.hidden||direction.ruler||direction.introUntil>direction.now||game.photoOpen;}
 function currentChapter(){return CHAPTERS.findIndex(c=>c.scene===game.scene);}
-function clearInteraction(){canvas.classList.remove('photo-album');game.keys.clear();game.nearby=null;game.dialogueQueue=[];game.dialogueCallback=null;game.photoOpen=false;direction.ruler=false;direction.introUntil=0;direction.toastUntil=0;$('chapter-intro').hidden=true;$('toast').hidden=true;$('ruler-controls').hidden=true;ui.dialogue.hidden=true;ui.action.hidden=true;ui.ringPanel.hidden=true;ui.letterPanel.hidden=true;ui.photoControls.hidden=true;player.moving=false;herry.moving=false;peanut.moving=false;}
-function chapterIntro(index){const c=CHAPTERS[index];direction.chapterIndex=index;direction.introUntil=direction.now+(direction.reduced?900:2400);$('intro-number').textContent='A LITTLE MEMORY';$('intro-title').textContent=c.title;$('intro-place').textContent=c.place;$('chapter-intro').hidden=false;$('chapter-intro').style.animation='none';void $('chapter-intro').offsetWidth;$('chapter-intro').style.animation='';}
+function clearInteraction(){stopEndingMusic();document.body.classList.remove('ending-blackout','ending-rush');canvas.classList.remove('photo-album');game.keys.clear();game.nearby=null;game.dialogueQueue=[];game.dialogueCallback=null;game.photoOpen=false;direction.ruler=false;direction.introUntil=0;direction.toastUntil=0;$('chapter-intro').hidden=true;$('toast').hidden=true;$('ruler-controls').hidden=true;ui.dialogue.hidden=true;ui.action.hidden=true;ui.ringPanel.hidden=true;ui.letterPanel.hidden=true;ui.photoControls.hidden=true;player.moving=false;herry.moving=false;peanut.moving=false;}
+function chapterIntro(index){const c=CHAPTERS[index];direction.chapterIndex=index;direction.introUntil=direction.now+(direction.reduced?900:2400);$('intro-number').textContent='A LITTLE MEMORY';$('intro-title').textContent=c.introTitle||c.title;$('intro-place').textContent=c.place;$('chapter-intro').hidden=false;$('chapter-intro').style.animation='none';void $('chapter-intro').offsetWidth;$('chapter-intro').style.animation='';}
 function enterChapter(index){clearInteraction();player.speed=185;CHAPTERS[index].enter();chapterIntro(index);sound('enter');}
 const originalTransition=transitionTo;
 transitionTo=function(callback){game.keys.clear();player.tx=player.x;player.ty=player.y;ui.action.hidden=true;originalTransition(()=>{callback();player.moving=false;herry.frame=1;const index=currentChapter();if(index>=0&&direction.chapterIndex!==index)chapterIntro(index);if(game.scene==='projector')direction.chapterIndex=-1;if(game.scene!=='hangdae'&&game.scene!=='ending'){$('cinema-caption').hidden=true;ui.play.classList.remove('cinematic');}});};
@@ -49,7 +71,7 @@ startGame=function(continueSaved=false){
   const checkpoint=continueSaved?storage.get('jenny-checkpoint-v19'):null;
   if(!continueSaved){storage.remove('jenny-checkpoint-v19');storage.remove('jenny-films-v19');direction.captures={};direction.captureImages={};direction.ending=null;}
   clearInteraction();direction.chapterIndex=-1;direction.ending=null;$('birthday-video').pause();$('birthday-video').hidden=true;$('video-resume').hidden=true;$('cinema-caption').hidden=true;ui.play.classList.remove('cinematic');
-  originalStart(continueSaved);unlockAudio();
+  originalStart(continueSaved);unlockAudio();syncPixelMusic(direction.now||performance.now());
   if(checkpoint&&continueSaved&&CHAPTERS[checkpoint.chapter]&&!game[CHAPTERS[checkpoint.chapter].key])restoreCheckpoint(checkpoint);
 };
 function requestRestart(){$('restart-panel').hidden=false;game.keys.clear();player.tx=player.x;player.ty=player.y;}
@@ -71,8 +93,8 @@ showMemoryLetter=function(number){
   loadCapture(number,direction.captures[number]);storage.set('jenny-films-v19',direction.captures);storage.remove('jenny-checkpoint-v19');direction.lastCheckpoint='';originalLetter(number);direction.restoredAt=direction.now;sound('film');
   const shortLetters=[
     '第一次见你时，我已经在镜子里偷偷练习，怎样站在你身边。',
-    '我们都把课上得很认真，尤其认真研究明天什么时候再见。',
-    '明洞那天，你觉得冷。我把浅粉色大衣带来给你穿。然后，我们之间多了一颗小小的爱心。',
+    '我们都把课上得很认真，尤其认真研究下次什么时候见面。',
+    '明洞那天，你觉得冷。我把大衣带来给你穿。然后，我们之间多了一颗小小的爱心。',
     '那天海洋馆里有很多鱼，但我一直在看站在身边的你。',
     '你抽中过一等奖，而我抽中了和你一起胡闹的每一天。',
     '我后来才明白，幸福经常只是你在旁边，而我们各自认真做着很普通的事。',
@@ -86,7 +108,7 @@ $('height-ruler').oninput=()=>{const v=Number($('height-ruler').value);herry.tip
 $('mirror-shutter').onclick=()=>{direction.ruler=false;$('ruler-controls').hidden=true;originalMirror();};
 takeEnglishCard=function(word){game.stage+=1;updateObjective();toast(`拿起 ${word} · 可以拖到日历上`);sound('paper');};
 placeEnglishCard=function(word){if(![21,23,25].includes(game.stage))return;game.stage+=1;updateObjective();direction.restoredAt=direction.now;toast(game.stage===26?'一周都圈满了。是上课，还是想见面？':'日历上又多了一次见面');sound('paper');};
-revealEnglishTruth=function(){game.stage=27;peanut.x=480;peanut.y=330;updateObjective();sayMany([['花生','English lesson？擦掉，应该是……想见宝宝。','🐶'],['Herry','这门课好像被拆穿了。','👦']]);};
+revealEnglishTruth=function(){game.stage=27;peanut.x=480;peanut.y=330;updateObjective();sayMany([['花生','English lesson？擦掉，应该是……想见宝宝。','🐶'],['Herry','看似我们在上英语课，其实我眼中没有单词只有你。','👦']]);};
 const originalHair=brushHerryHair;
 brushHerryHair=function(){originalHair();if(game.daily.hair){direction.restoredAt=direction.now;sound('film');}};
 const originalCloseMirror=closeMirrorPhoto;
@@ -102,7 +124,7 @@ function syncInventory(){const items=[];if(game.scene==='projector'&&game.stage=
 function wireCardDrag(button,word){button.onpointerdown=e=>{e.preventDefault();button.setPointerCapture(e.pointerId);const ghost=document.createElement('div');ghost.className='drag-ghost';ghost.textContent=word;document.body.appendChild(ghost);const move=ev=>{ghost.style.left=ev.clientX+'px';ghost.style.top=ev.clientY+'px';};move(e);button.onpointermove=move;button.onpointerup=ev=>{const p=worldPoint(ev);ghost.remove();button.onpointermove=null;button.onpointerup=null;if(p.x>738&&p.x<930&&p.y>35&&p.y<292)placeEnglishCard(word);else toast('把卡片拖到右边的一周日历');};button.onpointercancel=()=>ghost.remove();};}
 function stopWalk(){player.tx=player.x;player.ty=player.y;game.keys.clear();player.moving=false;}
 function pixelGlow(x,y,r,color,alpha=.2){const g=ctx.createRadialGradient(x,y,1,x,y,r);g.addColorStop(0,color+Math.round(alpha*255).toString(16).padStart(2,'0'));g.addColorStop(1,color+'00');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);}
-function frameImage(img,x,y,w,h,cover=true){if(!img?.complete||!img.naturalWidth)return;const scale=cover?Math.max(w/img.width,h/img.height):Math.min(w/img.width,h/img.height);ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.drawImage(img,x+(w-img.width*scale)/2,y+(h-img.height*scale)/2,img.width*scale,img.height*scale);ctx.restore();}
+function frameImage(img,x,y,w,h,cover=true){const iw=img?.naturalWidth||img?.videoWidth,ih=img?.naturalHeight||img?.videoHeight;if(!iw||!ih||img instanceof HTMLVideoElement&&img.readyState<2)return;const scale=cover?Math.max(w/iw,h/ih):Math.min(w/iw,h/ih);ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();ctx.drawImage(img,x+(w-iw*scale)/2,y+(h-ih*scale)/2,iw*scale,ih*scale);ctx.restore();}
 const filmRects=CHAPTERS.map((_,i)=>({x:i<4?42+(i%2)*115:708+(i%2)*115,y:70+Math.floor((i%4)/2)*106,w:95,h:76}));
 drawProjectorRoom=function(time){
   ctx.fillStyle='#10232c';ctx.fillRect(0,0,960,540);ctx.fillStyle='#173640';ctx.fillRect(0,0,960,290);
@@ -179,11 +201,11 @@ enterDorm=function(){stopWalk();Object.assign(game.hangdae,{dormStart:direction.
 const originalNearby=updateNearby;
 updateNearby=function(){originalNearby();if(game.scene==='projector'&&game.memoryEight&&distance(player,{x:480,y:300})<110)game.nearby={label:'放映我们的故事',action:startEnding};if(game.scene==='hangdae'&&game.stage===97&&direction.now<(game.hangdae.captionUntil||0)){game.nearby=null;}if(blocked()||game.scene==='ending'||game.scene==='hangdae'&&game.stage===96)game.nearby=null;ui.action.hidden=!game.nearby;if(game.nearby)ui.action.textContent=game.nearby.label;};
 const oldUpdate=update;
-update=function(dt,time){direction.now=time;const oldTime=direction.runtimeTime;direction.runtimeTime=time;const frozen=blocked()||!$('restart-panel').hidden||document.hidden;
+update=function(dt,time){direction.now=time;syncPixelMusic(time);const oldTime=direction.runtimeTime;direction.runtimeTime=time;const frozen=blocked()||!$('restart-panel').hidden||document.hidden;
   if(frozen){for(const obj of [game.campus,game.shenzhen,game.hangdae]){if(!obj)continue;for(const key of ['timeStart','photoStart','discountAt','warmStart','petalStart'])if(obj[key])obj[key]+=Math.max(0,time-oldTime);if(obj.ball?.start)obj.ball.start+=Math.max(0,time-oldTime);}player.moving=herry.moving=peanut.moving=false;}
   if(direction.introUntil&&time>=direction.introUntil){direction.introUntil=0;$('chapter-intro').hidden=true;}
   if(direction.toastUntil&&time>direction.toastUntil)$('toast').hidden=true;
-  if(game.scene==='ending'){updateEnding(time);return;}
+  if(game.scene==='ending'){updateEnding(time);syncPixelMusic(time);return;}
   if(direction.ruler){updateNearby();return;}
   if(frozen){if(game.scene==='aquarium')updateFishSchool(dt,time);return;}
   if(game.scene==='hangdae'&&(game.stage>=96||game.hangdae?.area==='station'&&game.stage===94)){updateHangdae(dt,time);updateNearby();return;}
@@ -203,7 +225,7 @@ canvas.addEventListener('pointerdown',e=>{
   if(game.scene==='hongdae'&&game.stage>=11&&p.x>665&&p.y<330){direction.hiddenTaps++;herry.tiptoe=Math.min(3,direction.hiddenTaps);toast(direction.hiddenTaps>=3?'再踮脚也只有 188 啦，小姚明':'他又偷偷踮了一点点脚');}
 },true);
 window.addEventListener('blur',()=>{game.keys.clear();stopWalk();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('restart-panel').hidden)$('restart-panel').hidden=true;else if(!ui.ringPanel.hidden)ui.ringPanel.hidden=true;}if([' ','Enter'].includes(e.key)&&!ui.dialogue.hidden){e.preventDefault();e.stopImmediatePropagation();advanceDialogue();}},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('restart-panel').hidden)$('restart-panel').hidden=true;else if(!ui.ringPanel.hidden)ui.ringPanel.hidden=true;}if([' ','Enter'].includes(e.key)&&!ui.dialogue.hidden){e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)advanceDialogue();}},true);
 function walkFloor(){return {projector:350,hongdae:350,english:365,myeongdong:365,aquarium:375,daily:360,campus:game.campus?.area==='court'?335:400,shenzhen:game.shenzhen?.area==='home'?405:365,hangdae:game.hangdae?.area==='road'?418:370}[game.scene]||285;}
 setTarget=function(x,y){player.tx=Math.max(55,Math.min(905,x));player.ty=Math.max(walkFloor(),Math.min(480,y));};
 function drawAtmosphere(time){if(game.photoOpen||game.scene==='campus'&&game.stage===68)return;ctx.save();const vignette=ctx.createRadialGradient(480,270,180,480,270,570);vignette.addColorStop(0,'#020c1600');vignette.addColorStop(1,'#020c1648');ctx.fillStyle=vignette;ctx.fillRect(0,0,960,540);if(!direction.reduced){ctx.fillStyle='#e6efd21b';for(let i=0;i<12;i++){const x=(i*83+time*(.003+i%3*.002))%960,y=52+(i*71+Math.sin(time/1700+i)*12)%440;ctx.fillRect(x,y,2,2);}}if(direction.restoredAt&&time-direction.restoredAt<1700){const t=(time-direction.restoredAt)/1700;ctx.strokeStyle=`rgba(168,230,191,${(1-t)*.4})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(player.x,player.y-60,t*800,0,Math.PI*2);ctx.stroke();}ctx.restore();}
@@ -221,16 +243,38 @@ const ENDING_COPIES=[
   '九点后的打折食物，\n也能摆成很丰盛的一顿晚餐。',
   '这条路，我送你走过一次又一次。'
 ];
+function stopEndingMusic(){direction.photos.forEach(m=>{if(m instanceof HTMLVideoElement)m.pause();});const e=direction.ending;if(e?.music){e.musicCancelled=true;e.music.pause();try{e.music.currentTime=0;}catch{}e.musicStarted=false;}$('ending-music-resume')?.remove();}
+function requestEndingMusic(e){
+  if(!e.music||e.musicPending)return;e.musicPending=true;
+  Promise.resolve(e.music.play()).then(()=>{e.musicPending=false;if(direction.ending!==e||e.musicCancelled){e.music.pause();return;}e.musicStarted=true;e.musicBlocked=false;$('ending-music-resume')?.remove();}).catch(()=>{
+    e.musicPending=false;if(direction.ending!==e||e.musicFailed||e.musicCancelled)return;e.musicBlocked=true;
+    let button=$('ending-music-resume');if(!button){button=document.createElement('button');button.id='ending-music-resume';button.className='ending-music-resume';button.textContent='♪ 播放配乐';$('canvas-wrap').appendChild(button);}
+    button.onclick=()=>{game.soundOn=true;e.musicBlocked=false;requestEndingMusic(e);};
+  });
+}
+function syncEndingMusic(e,time){
+  if(!e.music||e.musicFailed||e.musicCancelled||e.musicFinished)return;
+  const active=['photoRush','birthday'].includes(e.media)&&!e.videoPlayed&&game.soundOn&&!document.hidden;
+  if(!active){if(e.musicStarted){e.music.pause();e.musicStarted=false;}$('ending-music-resume')?.setAttribute('hidden','');return;}
+  if(e.musicBlocked)$('ending-music-resume')?.removeAttribute('hidden');
+  e.music.volume=(e.musicVolume??.65)*Math.min(1,Math.max(0,(time-e.rushAt)/1500));
+  if(!e.musicStarted&&!e.musicBlocked&&!e.musicPending)requestEndingMusic(e);
+}
 function startEnding(){
   clearInteraction();game.scene='ending';game.stage=100;ui.scene.textContent='终章 · 所有路，最后都走向你';ui.objective.textContent='放映我们的故事';ui.play.classList.add('cinematic');
-  canvas.classList.remove('photo-album');direction.photos=[];direction.ending={start:direction.now,segment:-1,media:'montage',video:null,videoPlayed:false,photoSeconds:4,completed:false};
+  canvas.classList.remove('photo-album');direction.photos=[];direction.ending={start:direction.now,segment:-1,media:'montage',video:null,videoPlayed:false,photoSeconds:2.4,completed:false};
+  const run=direction.ending;
   $('cinema-caption').hidden=false;
   fetch('assets/ending.json').then(r=>r.ok?r.json():{}).then(config=>{
-    if(!direction.ending)return;
-    direction.ending.photoSeconds=Math.max(3,Number(config.photo_seconds)||4);
+    if(direction.ending!==run)return;
+    run.photoSeconds=Math.max(2,Number(config.photo_seconds)||2.4);
+    if(config.bgm){const music=new Audio(config.bgm);music.preload='auto';music.loop=false;music.volume=0;run.music=music;run.musicVolume=Math.max(0,Math.min(1,Number(config.bgm_volume)||.65));music.onended=()=>run.musicFinished=true;music.onerror=()=>{run.musicFailed=true;$('ending-music-resume')?.setAttribute('hidden','');};}
     if(config.video){direction.ending.video=config.video;$('birthday-video').src=config.video;$('birthday-video').load();}
-    return Promise.all((config.photos||[]).map(src=>new Promise(resolve=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>resolve(null);img.src=src;})));
-  }).then(photos=>{if(photos)direction.photos=photos.filter(Boolean);}).catch(()=>{});
+    return Promise.all((config.media||config.photos?.map(src=>({type:'photo',src}))||[]).map(item=>new Promise(resolve=>{
+      if(item.type==='video'){const clip=document.createElement('video');clip.muted=true;clip.playsInline=true;clip.preload='auto';clip.loop=true;clip.onloadeddata=()=>resolve(clip);clip.onerror=()=>resolve(null);clip.src=item.src;clip.load();}
+      else {const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>resolve(null);img.src=item.src;}
+    })));
+  }).then(photos=>{if(direction.ending!==run)return;if(photos)direction.photos=photos.filter(Boolean);if(run.previewPhotos)run.start=direction.now-48001;}).catch(()=>{});
   sound('enter');
 }
 function updateEnding(time){
@@ -241,16 +285,75 @@ function updateEnding(time){
     else if(elapsed<42)$('cinema-caption').textContent=ENDING_COPIES[index];
     else if(elapsed<46)$('cinema-caption').textContent='走过的那些地方，\n最后都回到你身边。';
     else $('cinema-caption').textContent='';
-    if(elapsed>=48){e.media='birthday';e.birthdayAt=time;$('cinema-caption').textContent=direction.photos.length?'那些像素里的日子，\n原来一直真实地发生在我们之间。':'宝宝，生日快乐。\n我们的故事，还在继续。';}
+      if(elapsed>=48){e.media='blackout';e.blackoutAt=time;$('cinema-caption').textContent='';document.body.classList.add('ending-blackout');muteAmbient();}
+    }else if(e.media==='blackout'){
+      if(time>=e.blackoutAt+4000){
+        document.body.classList.remove('ending-blackout');document.body.classList.add('ending-rush');
+        canvas.classList.add('photo-album');e.media=direction.photos.length?'photoRush':'birthday';e.rushAt=time;e.birthdayAt=time;
+        const schedule=memorySchedule(direction.photos,e.music?.duration,e.photoSeconds);e.photoBeats=schedule.beats;e.rushSeconds=schedule.duration;e.photoIndex=-1;
+      }
+    }else if(e.media==='photoRush'){
+      $('cinema-caption').textContent='';
+      if(memoryPlaybackAge(e,time)>=e.rushSeconds-.02){direction.photos.forEach(m=>{if(m instanceof HTMLVideoElement)m.pause();});e.media='birthday';e.birthdayAt=time;$('cinema-caption').textContent='宝宝，生日快乐。\n我们的故事，还在继续。';}
   }else if(e.media==='birthday'){
     canvas.classList.toggle('photo-album',direction.photos.length>0);
-    const duration=direction.photos.length?2800+direction.photos.length*e.photoSeconds*1000:12000,age=time-e.birthdayAt;
+      const duration=7200,age=time-e.birthdayAt;
     if(e.video&&!e.videoPlayed&&age>=duration){playBirthdayVideo();return;}
     if(age>10000&&age<duration)$('cinema-caption').textContent='';
     if(age>=duration){$('cinema-caption').textContent='宝宝，生日快乐。\n我们的故事，还在继续。';e.completed=true;game.nearby={label:'回放映室，再看一次',action:()=>{clearInteraction();canvas.classList.remove('photo-album');direction.ending=null;ui.play.classList.remove('cinematic');$('cinema-caption').hidden=true;transitionTo(()=>setProjectorRoom(true));}};ui.action.hidden=false;ui.action.textContent=game.nearby.label;}
   }
-  ambient(time);
+    syncEndingMusic(e,time);
+    if(!['blackout','photoRush','birthday'].includes(e.media))ambient(time);
 }
+  // Readable main-photo holds with a gentle first/last slowdown for a BGM edit.
+  // The S curve is a depth trajectory, not a grid of tiny thumbnails.
+  function photoArrivalTimes(count,hold=direction.ending?.photoSeconds||2.4){const beats=[];let time=0;for(let i=0;i<count;i++){if(i)time+=i===1?Math.max(3.5,hold):i>=count-3?hold+.6+(i-(count-3))*.4:hold;beats.push(time);}return beats;}
+  function memorySchedule(media,musicDuration,hold=2.4){
+    const weights=media.map((m,i)=>m instanceof HTMLVideoElement?Math.max(4,Math.min(8,m.duration||6)):i===0?3.5:i===media.length-1?4.5:hold);
+    const minimum=media.map(m=>m instanceof HTMLVideoElement?Math.min(4,m.duration||4):2);
+    const base=minimum.reduce((a,b)=>a+b,0),normal=weights.reduce((a,b)=>a+b,0);
+    const target=Number.isFinite(musicDuration)&&musicDuration>=base?musicDuration:normal;
+    const extras=weights.map((w,i)=>Math.max(.1,w-minimum[i])),sum=extras.reduce((a,b)=>a+b,0);
+    let cursor=0;const beats=weights.map((_,i)=>{const start=cursor;cursor+=minimum[i]+(target-base)*extras[i]/sum;return start;});
+    return {beats,duration:target};
+  }
+  function memoryPlaybackAge(e,time){
+    // Use the audio playhead so delayed autoplay or a background tab cannot
+    // leave the final memory ahead of the piano's ending.
+    if(e.music&&!e.musicFailed&&!e.musicCancelled){if(e.musicStarted||e.musicFinished)return e.music.currentTime;if(e.musicPending||e.musicBlocked)return 0;}
+    return Math.max(0,(time-e.rushAt)/1000);
+  }
+  function drawPhotoRibbon(time,settled=false){
+    const e=direction.ending,count=direction.photos.length;if(!count)return;
+    const age=memoryPlaybackAge(e,time),beats=e.photoBeats||photoArrivalTimes(count);
+    let head=0;while(head<count-1&&age>=beats[head+1])head++;
+    if(settled)head=count-1;
+    const next=beats[head+1],phase=next==null?0:Math.min(1,(age-beats[head])/(next-beats[head]));
+    const drift=Math.max(0,Math.min(1,(phase-.65)/.35));
+    const progress=head+(direction.reduced?0:drift*drift*(3-2*drift));
+    ctx.fillStyle='#050e19';ctx.fillRect(0,0,960,540);pixelGlow(480,245,480,'#7cbbb3',.15);pixelGlow(780,120,240,'#e8c690',.07);
+    if(!direction.reduced){ctx.save();ctx.strokeStyle='#beded414';ctx.lineWidth=1;for(let ring=0;ring<3;ring++){ctx.beginPath();for(let n=0;n<130;n++){const a=n*.055+age*.09,r=60+n*(2.5+ring*.35),x=480+Math.cos(a)*r,y=245+Math.sin(a)*r*.48;if(n)ctx.lineTo(x,y);else ctx.moveTo(x,y);}ctx.stroke();}ctx.restore();}
+    ctx.save();ctx.imageSmoothingEnabled=true;e.visiblePhotos=0;e.photoIndex=head;e.revealedCount=head+1;
+    for(let i=Math.max(0,head-8);i<=head;i++){
+      const local=settled&&i===head?1:Math.max(0,age-beats[i]);if(local<=0)continue;
+      const arrivalDuration=i===0?1.2:Math.min(.42,((beats[i+1]??beats[i]+1)-beats[i])*.75);
+      const d=progress-i,t=Math.min(1,local/arrivalDuration),ease=1-Math.pow(1-t,3);
+      const x=direction.reduced?480+(i-head)*110:480+Math.sin(d*.91)*340+(1-ease)*210;
+      const y=direction.reduced?245:245+Math.sin(d*1.22)*98-(1-ease)*55;
+      const depth=direction.reduced?i===head?1:.48:1/(1+d*.28),fade=Math.max(0,Math.min(1,(8-d)/2));
+      if(fade<=0)continue;e.visiblePhotos++;
+      const img=direction.photos[i];
+      if(img instanceof HTMLVideoElement){if(i===head&&!settled){if(!img._memoryPlaying){img._memoryPlaying=true;img.currentTime=0;img.play().catch(()=>{img._memoryPlaying=false;});}}else if(img._memoryPlaying){img.pause();img._memoryPlaying=false;}}
+      const ratio=(img.naturalWidth||img.videoWidth)/(img.naturalHeight||img.videoHeight),w=Math.min(590,350*ratio),h=w/ratio;
+      ctx.save();ctx.globalAlpha=Math.min(1,i===0?t:t*4)*fade;ctx.translate(x,y);
+      ctx.rotate(direction.reduced?0:Math.sin(d*.76)*.17-(1-ease)*.18);
+      const scale=depth*(direction.reduced?1:.78+ease*.22);ctx.scale(scale,scale);
+      ctx.shadowColor='#000b';ctx.shadowBlur=26;ctx.shadowOffsetY=12;ctx.fillStyle='#eee7d6';ctx.fillRect(-w/2-7,-h/2-7,w+14,h+24);ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+      frameImage(img,-w/2,-h/2,w,h,false);ctx.fillStyle=`rgba(3,13,22,${(1-depth)*.24})`;ctx.fillRect(-w/2,-h/2,w,h);ctx.restore();
+    }
+    ctx.restore();ctx.imageSmoothingEnabled=false;
+    const shade=ctx.createRadialGradient(480,245,180,480,245,590);shade.addColorStop(0,'#02081000');shade.addColorStop(1,'#020810a0');ctx.fillStyle=shade;ctx.fillRect(0,0,960,540);
+  }
 function memoryCard(index,x,y,w,angle,scale,alpha){
   const h=w*.61,img=direction.captureImages[index+1];ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);
   ctx.shadowColor='#03101cc0';ctx.shadowBlur=18;ctx.fillStyle='#f2e7c9';ctx.fillRect(-w/2-9,-h/2-9,w+18,h+34);ctx.shadowBlur=0;
@@ -275,8 +378,13 @@ function drawEnding(time){
     else {ctx.save();ctx.globalAlpha=1-fade;const scale=direction.reduced?1:1-fade*.22;ctx.translate(480,270);ctx.scale(scale,scale);ctx.rotate(direction.reduced?0:fade*.08);ctx.translate(-480,-270);drawMemoryVignette(8,time);ctx.restore();}
     if(!direction.reduced){ctx.fillStyle='#e0ecb9';for(let i=0;i<40;i++){const a=phase+i*.81,r=40+(i*37+elapsed*12)%510;ctx.globalAlpha=.16*(1-fade);ctx.fillRect(480+Math.cos(a)*r,260+Math.sin(a)*r*.56,2,2);}ctx.globalAlpha=1;}
     ctx.fillStyle='#061a2480';ctx.fillRect(0,395,960,145);
-    ctx.fillStyle=`rgba(241,241,222,${fade})`;ctx.fillRect(0,0,960,540);
+      ctx.fillStyle=`rgba(0,0,0,${fade})`;ctx.fillRect(0,0,960,540);
+    }else if(e.media==='blackout'){
+      ctx.fillStyle='#000';ctx.fillRect(0,0,960,540);
+    }else if(e.media==='photoRush'){
+      drawPhotoRibbon(time);
   }else if(e.media==='birthday'){
+      if(direction.photos.length&&e.rushAt!=null){drawPhotoRibbon(time,true);ctx.fillStyle='#05101980';ctx.fillRect(0,385,960,155);return;}
     const t=(time-e.birthdayAt)/1000,alpha=Math.min(1,t/2.8);ctx.fillStyle='#f1f1de';ctx.fillRect(0,0,960,540);
     if(direction.photos.length){
       const hold=e.photoSeconds||4,index=Math.min(direction.photos.length-1,Math.floor(Math.max(0,t-2.8)/hold));
@@ -292,14 +400,14 @@ function drawEnding(time){
   }
 }
 function drawMemoryVignette(i,time){ctx.fillStyle=['#23474f','#365346','#524453','#164f69','#514854','#415c4d','#705841','#263c53','#24464c'][i];ctx.fillRect(30,35,900,450);pixelGlow(480,250,220,'#ecd8a0',.15);drawPoseSprite(images.herry,{x:446,y:375,frame:1,dir:0},90,150,.025);drawPoseSprite(images.jenny,{x:502,y:375,frame:1,dir:0},84,142,-.025);drawSprite(images.peanut,{x:606,y:390,frame:1,dir:0},64,82);ctx.fillStyle='#e3a5b0';ctx.font='25px serif';ctx.textAlign='center';ctx.fillText('♥',476,231);}
-function playBirthdayVideo(){const e=direction.ending;e.media='video';e.videoPlayed=true;$('cinema-caption').hidden=true;const v=$('birthday-video');v.hidden=false;muteAmbient();v.play().catch(()=>{$('video-resume').hidden=false;});}
+function playBirthdayVideo(){const e=direction.ending;e.media='video';e.videoPlayed=true;stopEndingMusic();$('cinema-caption').hidden=true;const v=$('birthday-video');v.hidden=false;muteAmbient();v.play().catch(()=>{$('video-resume').hidden=false;});}
 $('video-resume').onclick=()=>{$('birthday-video').play().then(()=>$('video-resume').hidden=true).catch(()=>{});};
 $('birthday-video').onended=()=>{$('birthday-video').hidden=true;direction.ending.media='birthday';direction.ending.birthdayAt=direction.now;$('cinema-caption').hidden=false;$('cinema-caption').textContent='宝宝，生日快乐。\n我好爱你。';};
 $('birthday-video').onerror=()=>{if(direction.ending?.media==='video'){$('birthday-video').hidden=true;$('video-resume').hidden=true;direction.ending.media='birthday';direction.ending.birthdayAt=direction.now;$('cinema-caption').hidden=false;$('cinema-caption').textContent='苏雨菲 Jenny，生日快乐。\n从那些日子，到以后每一天。';}};
 function unlockAudio(){if(!game.soundOn)return;try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;direction.audio ||= new AC();if(direction.audio.state==='suspended')direction.audio.resume();}catch{}}
 function tone(freq,duration=.25,volume=.025,type='sine'){if(!game.soundOn||!direction.audio||document.hidden)return;try{const a=direction.audio,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(.0001,a.currentTime);g.gain.exponentialRampToValueAtTime(volume,a.currentTime+.025);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+duration);o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+duration+.02);}catch{}}
 function sound(kind){unlockAudio();const notes={paper:[392,523],film:[392,494,659],enter:[261,392,523],lamp:[523]};(notes[kind]||[]).forEach((f,i)=>setTimeout(()=>tone(f,.3,.035,'triangle'),i*100));}
-function ambient(time){if(!game.soundOn||blocked()||time<direction.nextTone||direction.ending?.media==='video')return;direction.nextTone=time+1600;const chords=game.scene==='aquarium'?[196,294,392,440]:game.scene==='hangdae'?[220,330,392,494]:[261.6,329.6,392,523];tone(chords[Math.floor(time/1600)%4],2.1,.012);}
+function ambient(time){if(!pixelMusic.failed||!game.soundOn||blocked()||time<direction.nextTone||direction.ending?.media==='video')return;direction.nextTone=time+1600;const chords=game.scene==='aquarium'?[196,294,392,440]:game.scene==='hangdae'?[220,330,392,494]:[261.6,329.6,392,523];tone(chords[Math.floor(time/1600)%4],2.1,.012);}
 function muteAmbient(){direction.nextTone=direction.now+6000;}
 // Opening screen: a tiny city on a blue evening, with the three protagonists
 // together rather than a generic landing-page illustration.
@@ -357,7 +465,8 @@ if(['localhost','127.0.0.1','[::1]','::1'].includes(location.hostname)||location
     ['KAU · 站台送花',()=>CHAPTERS[7].enter()],
     ['KAU · 宿舍夜路',()=>{setHangdaeStation();setHangdaeRoad();}],
     ['KAU · 楼下告别',()=>{setHangdaeStation();setHangdaeRoad();clearInteraction();game.hangdae.lamps.fill(true);player.x=player.tx=855;player.y=player.ty=435;herry.x=782;herry.y=435;peanut.x=720;peanut.y=450;enterDorm();}],
-    ['终章 · 旋转蒙太奇',()=>startEnding()]
+    ['终章 · 旋转蒙太奇',()=>startEnding()],
+    ['真人照片 · 漂浮回忆',()=>{startEnding();direction.ending.previewPhotos=true;}]
   ];
   for(const [label,setup]of scenes){const button=document.createElement('button');button.type='button';button.textContent=label;grid.append(button);button.onclick=()=>{
     if(!images.jenny||!images.herry||!images.peanut){note.textContent='角色素材还在加载，稍等一下再跳转。';return;}

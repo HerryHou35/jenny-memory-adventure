@@ -1,6 +1,8 @@
 {
   "video": null,
-  "photo_seconds": 4,
+  "photo_seconds": 2.4,
+  "bgm": "assets/birthday-bgm.ogg",
+  "bgm_volume": 0.65,
   "photos": [
     "assets/memories/album/1/001.webp",
     "assets/memories/album/1/002.webp",
@@ -28,9 +30,7 @@
     "assets/memories/album/1/024.webp",
     "assets/memories/album/1/025.webp",
     "assets/memories/album/1/026.webp",
-    "assets/memories/album/1/027.webp",
     "assets/memories/album/1/028.webp",
-    "assets/memories/album/1/029.webp",
     "assets/memories/album/1/030.webp",
     "assets/memories/album/1/031.webp",
     "assets/memories/album/1/032.webp",
@@ -44,6 +44,13 @@
     "assets/memories/album/1/040.webp",
     "assets/memories/album/1/041.webp",
     "assets/memories/album/1/042.webp",
+    "assets/memories/album/1/043.webp",
+    "assets/memories/album/1/044.webp",
+    "assets/memories/album/1/045.webp",
+    "assets/memories/album/1/046.webp",
+    "assets/memories/album/1/047.webp",
+    "assets/memories/album/1/048.webp",
+    "assets/memories/album/1/049.webp",
     "assets/memories/album/2/001.webp",
     "assets/memories/album/2/002.webp",
     "assets/memories/album/2/003.webp",
@@ -52,6 +59,255 @@
     "assets/memories/album/2/006.webp",
     "assets/memories/album/2/007.webp",
     "assets/memories/album/2/008.webp",
-    "assets/memories/album/2/009.webp"
+    "assets/memories/album/2/009.webp",
+    "assets/memories/album/2/010.webp",
+    "assets/memories/album/2/011.webp",
+    "assets/memories/album/2/012.webp"
+  ],
+  "media": [
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/001.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/002.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/003.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/004.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/005.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/006.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/007.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/008.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/009.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/010.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/011.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/012.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/013.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/014.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/015.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/016.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/017.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/018.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/019.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/020.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/021.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/022.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/023.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/024.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/025.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/026.webp"
+    },
+    {
+      "type": "video",
+      "src": "assets/memories/album/1/027.mp4"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/028.webp"
+    },
+    {
+      "type": "video",
+      "src": "assets/memories/album/1/029.mp4"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/030.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/031.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/032.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/033.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/034.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/035.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/036.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/037.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/038.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/039.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/040.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/041.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/042.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/043.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/044.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/045.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/046.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/047.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/048.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/1/049.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/2/001.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/2/002.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/2/003.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/2/004.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/2/005.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/2/006.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/2/007.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/2/008.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/2/009.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/2/010.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/2/011.webp"
+    },
+    {
+      "type": "photo",
+      "src": "assets/memories/album/2/012.webp"
+    }
   ]
 }

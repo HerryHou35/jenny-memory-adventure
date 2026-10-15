@@ -112,3 +112,13 @@ body.reduce-motion *,body.reduce-motion *::before { animation:none !important; }
 .dev-jump-grid button { padding:10px 8px; border:1px solid #47616a; border-radius:2px; color:#f0e4c4; background:#244450; text-align:left; cursor:pointer; font-size:12px; }
 .dev-jump-grid button:hover { border-color:#a4d7be; background:#315961; }
 .dev-jump-toggle[aria-expanded='true'] { color:#12312f; background:#a8d8bd; }
+body.ending-blackout,body.ending-blackout #game-shell,body.ending-blackout #canvas-wrap { background:#000 !important; }
+body.ending-blackout #game-shell { box-shadow:none; border-color:#000; }
+body.ending-blackout #game-canvas { border-color:#000; }
+body.ending-blackout #canvas-wrap { border-color:#000; box-shadow:none; }
+body.ending-blackout #toast,body.ending-rush #toast { visibility:hidden; }
+body.ending-blackout .hud,body.ending-blackout .controls-help,body.ending-blackout .cinema-caption,body.ending-blackout .dev-jump-toggle,body.ending-blackout .dev-jump-panel { visibility:hidden; }
+body.ending-rush .hud,body.ending-rush .controls-help { visibility:hidden; }
+.ending-music-resume { position:absolute; z-index:40; top:14px; right:14px; padding:9px 13px; border:1px solid #97bcad; border-radius:3px; background:#102b36ed; color:#efe4c9; cursor:pointer; font-size:12px; }
+.dev-jump-toggle { top:56px; }
+.dev-jump-panel { top:100px; max-height:calc(100dvh - 120px); }
