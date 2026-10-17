@@ -75,7 +75,7 @@ function showNextDialogue() { const next = game.dialogueQueue.shift();game.activ
 function advanceDialogue() { if (ui.dialogue.hidden) return; const callback=game.dialogueCallback;game.dialogueCallback=null;game.activeDialogue=null;ui.dialogue.hidden=true;if(callback)callback();if(ui.dialogue.hidden)showNextDialogue(); }
 function performNearbyAction(){if(!game.running||ui.action.hidden||!ui.dialogue.hidden||game.fade>0||game.photoOpen||!ui.ringPanel.hidden||!ui.letterPanel.hidden||!ui.photoControls.hidden||typeof blocked==='function'&&blocked())return;const action=game.nearby?.action;if(!action)return;game.nearby=null;ui.action.hidden=true;action();}
 
-function worldPoint(event) { const rect = canvas.getBoundingClientRect(); return { x: (event.clientX - rect.left) * canvas.width / rect.width, y: (event.clientY - rect.top) * canvas.height / rect.height }; }
+function worldPoint(event) { const rect = canvas.getBoundingClientRect(); return { x: (event.clientX - rect.left) * 960 / rect.width, y: (event.clientY - rect.top) * 540 / rect.height }; }
 function setTarget(x, y) { player.tx = Math.max(55, Math.min(905, x)); player.ty = Math.max(285, Math.min(480, y)); }
 function onPointer(event) { if(game.photoOpen){closeMirrorPhoto();return;} if (!ui.dialogue.hidden || !ui.ringPanel.hidden || !ui.letterPanel.hidden) return; const p = worldPoint(event); setTarget(p.x, p.y); const rect = canvas.getBoundingClientRect(); ui.tapMarker.style.left = `${event.clientX - rect.left}px`; ui.tapMarker.style.top = `${event.clientY - rect.top}px`; ui.tapMarker.style.display = "block"; ui.tapMarker.style.animation = "none"; void ui.tapMarker.offsetWidth; ui.tapMarker.style.animation = "marker .55s ease-out forwards"; }
 function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
@@ -275,13 +275,13 @@ function drawAdidasSign(restored){
   ctx.strokeStyle=restored?"#8fe7c5":"#76888b";ctx.lineWidth=3;ctx.strokeRect(678,18,194,54);ctx.restore();
 }
 function drawReflectedSprite(image,entity,width,height,mirror){
-  // The glass reverses the view along its normal: front/back rows must swap,
-  // as well as the horizontal positions and the sprite's left/right details.
+  // A wall mirror reflects depth, not the screen's horizontal axis. Keep each
+  // person's world-x position on the same side; only front/back facing swaps.
   const reflectedDirection=[3,1,2,0][entity.dir]??0;
   const fw=image.width/4,fh=image.height/4,sx=entity.frame*fw,sy=reflectedDirection*fh;
-  const rx=mirror.x+mirror.w/2-(entity.x-770)*.63;
+  const rx=mirror.x+mirror.w/2+(entity.x-770)*.63;
   const ry=mirror.y+mirror.h-14+(entity.y-390)*.12;
-  ctx.save();ctx.translate(rx,0);ctx.scale(-1,1);ctx.globalAlpha=.57;
+  ctx.save();ctx.translate(rx,0);ctx.globalAlpha=.57;
   ctx.drawImage(image,sx,sy,fw,fh,-width/2,ry-height,width,height);ctx.restore();
 }
 function drawStoreMirror(restored){
@@ -308,9 +308,9 @@ function drawRingStall(restored){
 function drawMirrorPhoto(time){
   if(time<game.photoRevealAt)return;
   const enter=Math.min(1,(time-game.photoRevealAt)/260),scale=.82+enter*.18;ctx.save();ctx.fillStyle="rgba(3,12,17,.72)";ctx.fillRect(0,0,960,540);ctx.translate(480,270);ctx.scale(scale,scale);ctx.rotate((1-enter)*-.035);ctx.shadowColor="rgba(0,0,0,.5)";ctx.shadowBlur=24;ctx.fillStyle="#fffaf0";ctx.fillRect(-294,-214,588,428);ctx.shadowBlur=0;
-  ctx.save();ctx.beginPath();ctx.rect(-264,-184,528,286);ctx.clip();ctx.scale(-1,1);const photo=ctx.createLinearGradient(-264,-184,264,102);photo.addColorStop(0,"#7196a0");photo.addColorStop(1,"#c6d4cd");ctx.fillStyle=photo;ctx.fillRect(-264,-184,528,286);ctx.fillStyle="#52666a";ctx.fillRect(-264,36,528,66);ctx.strokeStyle="rgba(255,255,255,.2)";for(let y=48;y<102;y+=16){ctx.beginPath();ctx.moveTo(-264,y);ctx.lineTo(264,y);ctx.stroke();}
+  ctx.save();ctx.beginPath();ctx.rect(-264,-184,528,286);ctx.clip();const photo=ctx.createLinearGradient(-264,-184,264,102);photo.addColorStop(0,"#7196a0");photo.addColorStop(1,"#c6d4cd");ctx.fillStyle=photo;ctx.fillRect(-264,-184,528,286);ctx.fillStyle="#52666a";ctx.fillRect(-264,36,528,66);ctx.strokeStyle="rgba(255,255,255,.2)";for(let y=48;y<102;y+=16){ctx.beginPath();ctx.moveTo(-264,y);ctx.lineTo(264,y);ctx.stroke();}
   ctx.fillStyle="#f1f4ee";ctx.fillRect(62,-166,178,49);ctx.fillStyle="#172024";[[79,-128,10,17],[94,-136,10,25],[109,-144,10,33]].forEach(([x,y,w,h])=>{ctx.beginPath();ctx.moveTo(x,y+h);ctx.lineTo(x+8,y);ctx.lineTo(x+w+8,y);ctx.lineTo(x+w,y+h);ctx.closePath();ctx.fill();});ctx.font="900 22px Arial";ctx.textAlign="left";ctx.fillText("adidas",130,-128);
-  drawPoseSprite(images.herry,{x:-28,y:91,frame:1,dir:0},88,150,.035);drawPoseSprite(images.jenny,{x:29,y:91,frame:1,dir:0},82,142,-.035);drawSprite(images.peanut,{x:128,y:94,frame:1,dir:0},61,82);ctx.fillStyle="#f0839e";ctx.font="bold 21px sans-serif";ctx.textAlign="center";ctx.fillText("♥",1,-72);ctx.restore();
+  drawPoseSprite(images.herry,{x:-28,y:91,frame:1,dir:0},88,150,.035);drawPoseSprite(images.jenny,{x:29,y:91,frame:1,dir:0},82,142,-.035);drawSprite(images.peanut,{x:-128,y:94,frame:1,dir:0},61,82);ctx.fillStyle="#f0839e";ctx.font="bold 21px sans-serif";ctx.textAlign="center";ctx.fillText("♥",1,-72);ctx.restore();
   ctx.fillStyle="#19333d";ctx.textAlign="center";ctx.font="900 25px Arial, sans-serif";ctx.fillText("弘大 · 镜子前的合影",0,153);ctx.fillStyle="#6e7d7e";ctx.font="15px Arial, sans-serif";ctx.fillText("HONGDAE, SEOUL  ·  点击照片继续",0,184);ctx.restore();
 }
 function drawHongdae(time){

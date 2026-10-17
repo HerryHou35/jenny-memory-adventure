@@ -160,8 +160,19 @@ drawPinkSkiCoat=function(entity,alpha=1){if(spriteQueue){spriteQueue.push({coat:
 const oldJacket=drawCoupleJacket;
 drawCoupleJacket=function(entity,scale=1){if(spriteQueue&&[player,herry].includes(entity)){spriteQueue.push({jacket:true,entity:{...entity},original:entity,scale});return;}oldJacket(entity,scale);};
 const oldDraw=draw;
+function setMemoryCanvasResolution(photographic=false){
+  // Keep logical game coordinates at 960 x 540. Only the real-media segment
+  // uses a screen/DPR-sized backing store, avoiding a low-res upscale.
+  const cssWidth=photographic?canvas.getBoundingClientRect().width:960;
+  const scale=photographic?Math.max(1,Math.min(4,cssWidth*(window.devicePixelRatio||1)/960)):1;
+  const width=Math.round(960*scale),height=Math.round(width*9/16);
+  if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
+  ctx.setTransform(width/960,0,0,height/540,0,0);
+  ctx.imageSmoothingEnabled=photographic;ctx.imageSmoothingQuality='high';
+}
 draw=function(time){
   if(game.scene==='ending'){drawEnding(time);return;}
+  setMemoryCanvasResolution(false);
   // Capture character draws and render them together, in ground-depth order.
   spriteQueue=[];oldDraw(time);const queue=spriteQueue;spriteQueue=null;
   if(game.scene==='hangdae'&&game.hangdae?.area==='road'&&game.stage===96&&!game.hangdae.jennyEntered)queue.push({image:images.jenny,entity:{...player},original:player,width:70,height:122,yOffset:0});
@@ -397,6 +408,7 @@ function memoryCard(index,x,y,w,angle,scale,alpha){
   ctx.fillStyle='#466359';ctx.font='11px sans-serif';ctx.textAlign='center';ctx.fillText(CHAPTERS[index].title,0,h/2+24);ctx.restore();
 }
 function drawEnding(time){
+  setMemoryCanvasResolution(['photoRush','birthday'].includes(direction.ending?.media)&&direction.photos.length>0);
   const e=direction.ending;if(!e)return;const elapsed=(time-e.start)/1000;ctx.fillStyle='#071725';ctx.fillRect(0,0,960,540);
   if(e.media==='montage'){
     const fade=Math.max(0,Math.min(1,(elapsed-42)/6));const phase=elapsed*.28;
