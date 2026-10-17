@@ -60,7 +60,7 @@ function toast(copy){$('toast').textContent=copy;$('toast').hidden=false;directi
 function loadCapture(key,data){const img=new Image();img.onload=()=>direction.captureImages[key]=img;img.src=data;}
 function blocked(){return !game.running||game.fade>0||!ui.dialogue.hidden||!ui.letterPanel.hidden||!ui.ringPanel.hidden||!ui.photoControls.hidden||direction.ruler||direction.introUntil>direction.now||game.photoOpen;}
 function currentChapter(){return CHAPTERS.findIndex(c=>c.scene===game.scene);}
-function clearInteraction(){stopEndingMusic();document.body.classList.remove('ending-blackout','ending-rush');canvas.classList.remove('photo-album');game.keys.clear();game.nearby=null;game.dialogueQueue=[];game.dialogueCallback=null;game.photoOpen=false;direction.ruler=false;direction.introUntil=0;direction.toastUntil=0;$('chapter-intro').hidden=true;$('toast').hidden=true;$('ruler-controls').hidden=true;ui.dialogue.hidden=true;ui.action.hidden=true;ui.ringPanel.hidden=true;ui.letterPanel.hidden=true;ui.photoControls.hidden=true;player.moving=false;herry.moving=false;peanut.moving=false;}
+function clearInteraction(){hideBirthdayLetter();stopEndingMusic();document.body.classList.remove('ending-blackout','ending-rush');canvas.classList.remove('photo-album');game.keys.clear();game.nearby=null;game.dialogueQueue=[];game.dialogueCallback=null;game.photoOpen=false;direction.ruler=false;direction.introUntil=0;direction.toastUntil=0;$('chapter-intro').hidden=true;$('toast').hidden=true;$('ruler-controls').hidden=true;ui.dialogue.hidden=true;ui.action.hidden=true;ui.ringPanel.hidden=true;ui.letterPanel.hidden=true;ui.photoControls.hidden=true;player.moving=false;herry.moving=false;peanut.moving=false;}
 function chapterIntro(index){const c=CHAPTERS[index];direction.chapterIndex=index;direction.introUntil=direction.now+(direction.reduced?900:2400);$('intro-number').textContent='A LITTLE MEMORY';$('intro-title').textContent=c.introTitle||c.title;$('intro-place').textContent=c.place;$('chapter-intro').hidden=false;$('chapter-intro').style.animation='none';void $('chapter-intro').offsetWidth;$('chapter-intro').style.animation='';}
 function enterChapter(index){clearInteraction();player.speed=185;CHAPTERS[index].enter();chapterIntro(index);sound('enter');}
 const originalTransition=transitionTo;
@@ -300,11 +300,45 @@ function updateEnding(time){
       const duration=7200,age=time-e.birthdayAt;
     if(e.video&&!e.videoPlayed&&age>=duration){playBirthdayVideo();return;}
     if(age>10000&&age<duration)$('cinema-caption').textContent='';
-    if(age>=duration){$('cinema-caption').textContent='宝宝，生日快乐。\n我们的故事，还在继续。';e.completed=true;game.nearby={label:'回放映室，再看一次',action:()=>{clearInteraction();canvas.classList.remove('photo-album');direction.ending=null;ui.play.classList.remove('cinematic');$('cinema-caption').hidden=true;transitionTo(()=>setProjectorRoom(true));}};ui.action.hidden=false;ui.action.textContent=game.nearby.label;}
+    if(age>=duration){
+      if(!e.letterShown){openBirthdayLetter();return;}
+      $('cinema-caption').textContent='宝宝，生日快乐。\n我们的故事，还在继续。';e.completed=true;
+      game.nearby={label:'再读一次 Herry 的信',action:openBirthdayLetter};ui.action.hidden=false;ui.action.textContent=game.nearby.label;
+    }
   }
     syncEndingMusic(e,time);
-    if(!['blackout','photoRush','birthday'].includes(e.media))ambient(time);
+    if(!['blackout','photoRush','birthday','letter'].includes(e.media))ambient(time);
 }
+function hideBirthdayLetter(){
+  $('birthday-letter').hidden=true;document.body.classList.remove('reading-birthday-letter');
+  if($('game-shell').inert)$('game-shell').inert=false;
+}
+function openBirthdayLetter(){
+  const e=direction.ending;if(!e||game.scene!=='ending')return;
+  e.media='letter';e.letterShown=true;e.completed=true;
+  stopEndingMusic();game.nearby=null;ui.action.hidden=true;$('cinema-caption').hidden=true;
+  $('birthday-video').pause();$('birthday-video').hidden=true;$('video-resume').hidden=true;
+  document.body.classList.remove('ending-blackout','ending-rush');document.body.classList.add('reading-birthday-letter');
+  $('game-shell').inert=true;const letter=$('birthday-letter');letter.hidden=false;letter.scrollTop=0;
+  letter.querySelector('article').focus({preventScroll:true});
+}
+$('birthday-letter-close').onclick=()=>{
+  hideBirthdayLetter();const e=direction.ending;if(e){e.media='birthday';$('cinema-caption').hidden=false;}
+  game.nearby={label:'再读一次 Herry 的信',action:openBirthdayLetter};ui.action.hidden=false;ui.action.textContent=game.nearby.label;ui.action.focus({preventScroll:true});
+};
+$('birthday-letter-home').onclick=()=>{
+  hideBirthdayLetter();clearInteraction();direction.ending=null;ui.play.classList.remove('cinematic');$('cinema-caption').hidden=true;
+  transitionTo(()=>setProjectorRoom(true));$('home-button').focus({preventScroll:true});
+};
+$('birthday-letter').addEventListener('keydown',event=>{
+  event.stopPropagation();
+  if(event.key==='Escape'){event.preventDefault();$('birthday-letter-close').click();return;}
+  if(event.key==='Tab'){
+    const first=$('birthday-letter-close'),last=$('birthday-letter-home');
+    if(event.shiftKey&&(document.activeElement===first||document.activeElement===event.currentTarget.querySelector('article'))){event.preventDefault();last.focus();}
+    else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+  }
+});
   // Readable main-photo holds with a gentle first/last slowdown for a BGM edit.
   // The S curve is a depth trajectory, not a grid of tiny thumbnails.
   function photoArrivalTimes(count,hold=direction.ending?.photoSeconds||2.4){const beats=[];let time=0;for(let i=0;i<count;i++){if(i)time+=i===1?Math.max(3.5,hold):i>=count-3?hold+.6+(i-(count-3))*.4:hold;beats.push(time);}return beats;}
@@ -466,7 +500,8 @@ if(['localhost','127.0.0.1','[::1]','::1'].includes(location.hostname)||location
     ['KAU · 宿舍夜路',()=>{setHangdaeStation();setHangdaeRoad();}],
     ['KAU · 楼下告别',()=>{setHangdaeStation();setHangdaeRoad();clearInteraction();game.hangdae.lamps.fill(true);player.x=player.tx=855;player.y=player.ty=435;herry.x=782;herry.y=435;peanut.x=720;peanut.y=450;enterDorm();}],
     ['终章 · 旋转蒙太奇',()=>startEnding()],
-    ['真人照片 · 漂浮回忆',()=>{startEnding();direction.ending.previewPhotos=true;}]
+    ['真人照片 · 漂浮回忆',()=>{startEnding();direction.ending.previewPhotos=true;}],
+    ['终章 · Herry 的信',()=>{startEnding();openBirthdayLetter();}]
   ];
   for(const [label,setup]of scenes){const button=document.createElement('button');button.type='button';button.textContent=label;grid.append(button);button.onclick=()=>{
     if(!images.jenny||!images.herry||!images.peanut){note.textContent='角色素材还在加载，稍等一下再跳转。';return;}

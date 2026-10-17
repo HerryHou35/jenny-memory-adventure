@@ -7,7 +7,7 @@
   <meta name="description" content="苏雨菲的像素回忆冒险。" />
   <title>花生带你回到那一天</title>
   <link rel="stylesheet" href="styles.css?v=19" />
-  <link rel="stylesheet" href="polish.css?v=19.13" />
+  <link rel="stylesheet" href="polish.css?v=19.15" />
 </head>
 <body>
   <main id="game-shell">
@@ -111,7 +111,37 @@
     </div>
   </section>
 
-  <script src="app.js?v=19.14"></script>
-  <script src="polish.js?v=19.14"></script>
+  <section id="birthday-letter" class="birthday-letter-screen" hidden aria-labelledby="birthday-letter-title" role="dialog" aria-modal="true">
+    <div class="birthday-letter-atmosphere" aria-hidden="true"></div>
+    <article class="birthday-letter-paper" tabindex="-1">
+      <header class="birthday-letter-header">
+        <span class="birthday-letter-edition">OCTOBER 25 · FOR JENNY</span>
+        <button id="birthday-letter-close" type="button">收好这封信 <span aria-hidden="true">↗</span></button>
+      </header>
+      <div class="birthday-letter-monogram" aria-hidden="true">H <span>♡</span> J</div>
+      <p class="birthday-letter-kicker">一封慢慢走到你面前的信</p>
+      <h2 id="birthday-letter-title">亲爱的雨菲宝宝<br /><span>生日快乐</span></h2>
+      <div class="birthday-letter-body">
+        <p>时光过得好快 已经是我们在一起的<strong>第198天</strong>啦 这也是我陪你过的第一个生日 我真的觉得好幸福 可以陪你一起度过这么多快乐的时光</p>
+        <p>从首尔到深圳 我们一起经历了好多好多的事 我们的脚步几乎遍布了这两座城市的每一个角落 你曾说过 你想跟我多去一些地方 以后我自己在韩国的时候 走到哪都能想起你 好在命运的安排下 我们又可以在深圳度过属于我们的这样一段时光</p>
+        <p>虽然我们每天都很忙 可能只有周末才能找机会见面 给彼此充充电 但我们的爱从来没有衰退过 我们每一天的努力和进步 都是为了让我们能在空闲的时候多陪伴彼此 为了我们能有更好的未来而奋斗</p>
+        <p>当我计划去做这件事的时候 我其实想了很多个方案 我知道我还欠你一个小机器人智能体 我想过要不要根据我们的聊天记录练一个小模型去给你 在我不能及时回你消息的时候代替我回应你 但我想了想 我不想让别人代替我 不然我会吃醋</p>
+        <p>所以我决定做这样一个小游戏 以花生的口吻 带我们回到过去 重新体验一下我们的点点滴滴 我的制作过程中 因为要不停的测试 所以我相当于一遍又一遍看了很多次我们这么多天所有的回忆 每一次都会让我潸然泪下</p>
+        <p>我好感动 感动你一直对我这么好<br />我好开心 开心可以遇到你<br />我好幸福 幸福可以和你在一起</p>
+        <p>我知道我们马上就要面临短暂的分别 别害怕 想想我们在韩国的最后一天抱着哭的样子 我们不是依旧过得好好的 我们那个时候没有想过现在会这么幸福</p>
+        <p class="birthday-letter-promise">等我回来 我们会越来越幸福的</p>
+        <p>我爱你 宝宝 生日快乐</p>
+      </div>
+      <footer class="birthday-letter-signature">
+        <span>写于 October 15th 12:42 AM</span>
+        <b>Herry</b>
+        <span class="birthday-letter-seal" aria-hidden="true">H</span>
+      </footer>
+      <div class="birthday-letter-bottom"><span>首尔 · 深圳 · 以后每一天</span><button id="birthday-letter-home" type="button">回放映室，再看一次</button></div>
+    </article>
+  </section>
+
+  <script src="app.js?v=19.15"></script>
+  <script src="polish.js?v=19.15"></script>
 </body>
 </html>
