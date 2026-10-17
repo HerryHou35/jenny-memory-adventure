@@ -254,7 +254,7 @@ const ENDING_COPIES=[
   '九点后的打折食物，\n也能摆成很丰盛的一顿晚餐。',
   '这条路，我送你走过一次又一次。'
 ];
-function stopEndingMusic(){direction.photos.forEach(m=>{if(m instanceof HTMLVideoElement)m.pause();});const e=direction.ending;if(e?.music){e.musicCancelled=true;e.music.pause();try{e.music.currentTime=0;}catch{}e.musicStarted=false;}$('ending-music-resume')?.remove();}
+function stopEndingMusic(){direction.photos.forEach(m=>{if(m instanceof HTMLVideoElement)m.pause();});const e=direction.ending;if(e)e.musicCancelled=true;if(e?.music){e.musicCancelled=true;e.music.pause();try{e.music.currentTime=0;}catch{}e.musicStarted=false;}$('ending-music-resume')?.remove();}
 function requestEndingMusic(e){
   if(!e.music||e.musicPending)return;e.musicPending=true;
   Promise.resolve(e.music.play()).then(()=>{e.musicPending=false;if(direction.ending!==e||e.musicCancelled){e.music.pause();return;}e.musicStarted=true;e.musicBlocked=false;$('ending-music-resume')?.remove();}).catch(()=>{
@@ -279,6 +279,7 @@ function startEnding(){
   fetch('assets/ending.json').then(r=>r.ok?r.json():{}).then(config=>{
     if(direction.ending!==run)return;
     run.photoSeconds=Math.max(2,Number(config.photo_seconds)||2.4);run.letterBgm=config.letter_bgm||null;
+    if(run.media==='letter'){setLetterMusicSource(run.letterBgm);syncLetterMusic();}
     if(config.bgm){const music=new Audio(config.bgm);music.preload='auto';music.loop=false;music.volume=0;run.music=music;run.musicVolume=Math.max(0,Math.min(1,Number(config.bgm_volume)||.65));music.onended=()=>run.musicFinished=true;music.onerror=()=>{run.musicFailed=true;$('ending-music-resume')?.setAttribute('hidden','');};}
     if(config.video){direction.ending.video=config.video;$('birthday-video').src=config.video;$('birthday-video').load();}
     return Promise.all((config.media||config.photos?.map(src=>({type:'photo',src}))||[]).map(item=>new Promise(resolve=>{
@@ -322,6 +323,7 @@ function updateEnding(time){
 }
 let letterWriting=null,letterMusic=null,letterMusicSource=null,letterTextNodes=null,letterMusicPending=false;
 function stopLetterMusic(){if(letterMusic){letterMusic.pause();letterMusic.currentTime=0;}letterMusicPending=false;}
+function setLetterMusicSource(source){if(source!==letterMusicSource){stopLetterMusic();letterMusic=null;letterMusicSource=source;}}
 function syncLetterMusic(){
   const button=$('letter-music-toggle');
   if(!letterMusicSource){button.hidden=true;return;}
@@ -390,7 +392,7 @@ function openBirthdayLetter(){
   document.body.classList.remove('ending-blackout','ending-rush');document.body.classList.add('reading-birthday-letter');
   $('game-shell').inert=true;const letter=$('birthday-letter');letter.hidden=false;letter.scrollTop=0;
   letter.querySelector('article').focus({preventScroll:true});
-  const source=e.letterBgm||null;if(source!==letterMusicSource){stopLetterMusic();letterMusic=null;letterMusicSource=source;}
+  setLetterMusicSource(e.letterBgm||null);
   startLetterWriting();syncLetterMusic();
 }
 $('birthday-letter-close').onclick=()=>{

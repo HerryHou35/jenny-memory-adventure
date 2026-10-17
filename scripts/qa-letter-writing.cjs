@@ -1,7 +1,7 @@
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('C:/Users/18731/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const root=path.resolve(__dirname,'../dist');
-const server=http.createServer((req,res)=>{const file=path.join(root,decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\/$/,'/index.html'));if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}fs.readFile(file,(err,data)=>{if(err){res.writeHead(404).end();return;}res.setHeader('Content-Type',({'.svg':'image/svg+xml','.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.webp':'image/webp','.json':'application/json','.ogg':'audio/ogg'}[path.extname(file)])||'application/octet-stream');res.end(data);});});
+const server=http.createServer((req,res)=>{const file=path.join(root,decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\/$/,'/index.html'));if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}fs.readFile(file,(err,data)=>{if(err){res.writeHead(404).end();return;}res.setHeader('Content-Type',({'.mp3':'audio/mpeg','.svg':'image/svg+xml','.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.webp':'image/webp','.json':'application/json','.ogg':'audio/ogg'}[path.extname(file)])||'application/octet-stream');res.end(data);});});
 (async()=>{await new Promise(r=>server.listen(4177,'127.0.0.1',r));let browser;try{
  browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
  const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -33,5 +33,17 @@ const server=http.createServer((req,res)=>{const file=path.join(root,decodeURICo
    const resumed=!letterMusic.paused;hideBirthdayLetter();const stopped=letterMusic.paused&&letterMusic.currentTime===0;
    window.Audio=NativeAudio;return {started,muted,resumed,stopped,plays,pauses};
  });assert(music.started&&music.muted&&music.resumed&&music.stopped,'letter music lifecycle failed');
- assert(!errors.length,errors.join('\n'));console.log(JSON.stringify({passed:true,typing:true,autoScroll:true,manualScroll:true,reopen:true,textPreserved:true,music}));
+ const actual=await browser.newPage({viewport:{width:1280,height:900}});actual.on('pageerror',e=>errors.push(e.message));
+ await actual.goto('http://127.0.0.1:4177/?version=19.18');await actual.waitForFunction(()=>Object.keys(images).length===Object.keys(imagePaths).length);
+ await actual.locator('#dev-jump-toggle').click();await actual.getByRole('button',{name:'终章 · Herry 的信',exact:true}).click();
+ await actual.waitForFunction(()=>letterMusic&&!letterMusic.paused&&letterMusic.currentTime>.3&&Number.isFinite(letterMusic.duration),{},{timeout:15000});
+ const decoded=await actual.evaluate(()=>({src:letterMusic.src,duration:letterMusic.duration,playing:!letterMusic.paused,volume:letterMusic.volume,pixelPaused:pixelMusic.audio.paused,albumPaused:!direction.ending.music||direction.ending.music.paused}));
+ assert(decoded.src.endsWith('/assets/letter-bgm.mp3')&&decoded.duration>30&&decoded.pixelPaused&&decoded.albumPaused,'real music source or isolation failed');
+ await actual.locator('#letter-music-toggle').click();assert(await actual.evaluate(()=>letterMusic.paused),'real mute failed');
+ await actual.locator('#letter-music-toggle').click();await actual.waitForFunction(()=>!letterMusic.paused);
+ await actual.locator('#birthday-letter-close').click();assert(await actual.evaluate(()=>letterMusic.paused&&letterMusic.currentTime===0),'real music did not stop on close');
+ await actual.evaluate(()=>{openBirthdayLetter();});await actual.waitForFunction(()=>!letterMusic.paused&&letterMusic.currentTime>.1);
+ await actual.evaluate(()=>{finishLetterWriting();$('birthday-letter-home').click();});assert(await actual.evaluate(()=>letterMusic.paused),'real music leaked into projector');
+ await actual.close();
+ assert(!errors.length,errors.join('\n'));console.log(JSON.stringify({passed:true,typing:true,autoScroll:true,manualScroll:true,reopen:true,textPreserved:true,music,realAudio:decoded}));
 }finally{if(browser)await browser.close();await new Promise(r=>server.close(r));}})().catch(e=>{console.error(e);process.exitCode=1;});
