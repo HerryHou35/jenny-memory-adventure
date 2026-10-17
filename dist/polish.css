@@ -164,5 +164,11 @@ body.ending-blackout #toast,body.ending-rush #toast { visibility:hidden; }
 body.ending-blackout .hud,body.ending-blackout .controls-help,body.ending-blackout .cinema-caption,body.ending-blackout .dev-jump-toggle,body.ending-blackout .dev-jump-panel { visibility:hidden; }
 body.ending-rush .hud,body.ending-rush .controls-help { visibility:hidden; }
 .ending-music-resume { position:absolute; z-index:40; top:14px; right:14px; padding:9px 13px; border:1px solid #97bcad; border-radius:3px; background:#102b36ed; color:#efe4c9; cursor:pointer; font-size:12px; }
+.ending-load { position:absolute; z-index:42; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; padding:24px; background:#000; color:#e2e9df; text-align:center; }
+.ending-load[hidden] { display:none; }
+.ending-load p { margin:0; font-size:clamp(12px,1.8vw,18px); line-height:1.7; }
+.ending-load p + p { color:#96aaa3; font-size:clamp(11px,1.3vw,14px); }
+.ending-load progress { width:min(250px,70%); height:4px; accent-color:#a9d4c3; }
+.ending-load button { padding:10px 16px; border:1px solid #8aac9d; border-radius:4px; background:#18342d; color:#eee9d6; cursor:pointer; }
 .dev-jump-toggle { top:56px; }
 .dev-jump-panel { top:100px; max-height:calc(100dvh - 120px); }

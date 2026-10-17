@@ -38,7 +38,8 @@ const server=http.createServer((req,res)=>{
  await page.locator('#letter-easter-start').click();await page.waitForFunction(()=>!$('easter-video').paused);
  await page.evaluate(async()=>{const v=$('easter-video');window.realEasterPlay=v.play;v.play=()=>Promise.reject(Error('test autoplay block'));loadEasterClip(1);await Promise.resolve();await Promise.resolve();});assert(await page.locator('#easter-resume').isVisible(),'missing manual autoplay fallback');
  await page.evaluate(()=>$('easter-video').play=window.realEasterPlay);await page.locator('#easter-resume').click();await page.waitForFunction(()=>!$('easter-video').paused);
- await page.keyboard.press('Escape');assert(await page.locator('#easter-screen').isHidden(),'Escape did not return to letter');
+ const focusBeforeEscape=await page.evaluate(()=>({active:document.activeElement.id,insideEaster:Boolean(document.activeElement.closest('#easter-screen')),media:direction.ending.media}));
+ await page.keyboard.press('Escape');assert(await page.locator('#easter-screen').isHidden(),'Escape did not return to letter: '+JSON.stringify(focusBeforeEscape));
  await page.evaluate(()=>{clearInteraction();});assert(await page.evaluate(()=>$('easter-video').paused&&!$('easter-video').getAttribute('src')&&!$('game-shell').inert),'playback leaked after cleanup');
  assert(!errors.length,errors.join('\n'));console.log(JSON.stringify({passed:true,dialogueSelectionFixed:true,letterCopyable:true,orderedPlayback:played,automaticAdvance:true,replay:true,mobile:true,fallback:true,cleanup:true}));
 }finally{if(browser)await browser.close();await new Promise(r=>server.close(r));}})().catch(e=>{console.error(e);process.exitCode=1;});

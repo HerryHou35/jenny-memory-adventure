@@ -60,7 +60,7 @@ function toast(copy){$('toast').textContent=copy;$('toast').hidden=false;directi
 function loadCapture(key,data){const img=new Image();img.onload=()=>direction.captureImages[key]=img;img.src=data;}
 function blocked(){return !game.running||game.fade>0||!ui.dialogue.hidden||!ui.letterPanel.hidden||!ui.ringPanel.hidden||!ui.photoControls.hidden||direction.ruler||direction.introUntil>direction.now||game.photoOpen;}
 function currentChapter(){return CHAPTERS.findIndex(c=>c.scene===game.scene);}
-function clearInteraction(){stopEasterPlayback();hideBirthdayLetter();stopEndingMusic();document.body.classList.remove('ending-blackout','ending-rush');canvas.classList.remove('photo-album');game.keys.clear();game.nearby=null;game.dialogueQueue=[];game.dialogueCallback=null;game.photoOpen=false;direction.ruler=false;direction.introUntil=0;direction.toastUntil=0;$('chapter-intro').hidden=true;$('toast').hidden=true;$('ruler-controls').hidden=true;ui.dialogue.hidden=true;ui.action.hidden=true;ui.ringPanel.hidden=true;ui.letterPanel.hidden=true;ui.photoControls.hidden=true;player.moving=false;herry.moving=false;peanut.moving=false;}
+function clearInteraction(){cancelEndingAssets(direction.ending);$('ending-load').hidden=true;stopEasterPlayback();hideBirthdayLetter();stopEndingMusic();document.body.classList.remove('ending-blackout','ending-rush');canvas.classList.remove('photo-album');game.keys.clear();game.nearby=null;game.dialogueQueue=[];game.dialogueCallback=null;game.photoOpen=false;direction.ruler=false;direction.introUntil=0;direction.toastUntil=0;$('chapter-intro').hidden=true;$('toast').hidden=true;$('ruler-controls').hidden=true;ui.dialogue.hidden=true;ui.action.hidden=true;ui.ringPanel.hidden=true;ui.letterPanel.hidden=true;ui.photoControls.hidden=true;player.moving=false;herry.moving=false;peanut.moving=false;}
 function chapterIntro(index){const c=CHAPTERS[index];direction.chapterIndex=index;direction.introUntil=direction.now+(direction.reduced?900:2400);$('intro-number').textContent='A LITTLE MEMORY';$('intro-title').textContent=c.introTitle||c.title;$('intro-place').textContent=c.place;$('chapter-intro').hidden=false;$('chapter-intro').style.animation='none';void $('chapter-intro').offsetWidth;$('chapter-intro').style.animation='';}
 function enterChapter(index){clearInteraction();player.speed=185;CHAPTERS[index].enter();chapterIntro(index);sound('enter');}
 const originalTransition=transitionTo;
@@ -271,23 +271,74 @@ function syncEndingMusic(e,time){
   e.music.volume=(e.musicVolume??.65)*Math.min(1,Math.max(0,(time-e.rushAt)/1500));
   if(!e.musicStarted&&!e.musicBlocked&&!e.musicPending)requestEndingMusic(e);
 }
+function cancelEndingAssets(run){
+  const a=run?.assets;if(!a)return;a.cancelled=true;
+  for(const cancel of [...a.cancelers])cancel();a.cancelers.clear();
+}
+function showEndingLoad(run){
+  const a=run.assets,failed=a?.status==='error';$('ending-load').hidden=false;
+  $('ending-load-title').textContent=failed?'有些回忆暂时没能加载':'正在准备下一段回忆';
+  $('ending-load-copy').textContent=failed?'照片还在，不会跳过。请检查网络后重试。':'稍等一下，让每一张照片都好好出现。';
+  $('ending-load-progress').value=a?.expected?a.slots.filter(Boolean).length/a.expected:0;
+  $('ending-load-retry').hidden=!failed;$('ending-load-retry').disabled=!failed;
+}
+function loadEndingItem(item,a){
+  return new Promise((resolve,reject)=>{
+    const video=item.type==='video',media=video?document.createElement('video'):new Image();let settled=false;
+    const finish=(error,cancelled=false)=>{
+      if(settled)return;settled=true;clearTimeout(timer);a.cancelers.delete(cancel);
+      media.onload=media.onerror=media.onloadeddata=null;
+      if(error||cancelled){if(video){media.pause();media.removeAttribute('src');media.load();}else media.removeAttribute('src');}
+      if(cancelled)resolve(null);else if(error)reject(error);else resolve(media);
+    };
+    const cancel=()=>finish(null,true),timer=setTimeout(()=>finish(Error('Media load timeout')),30000);
+    a.cancelers.add(cancel);media.onerror=()=>finish(Error('Media load failed'));
+    if(video){media.muted=true;media.playsInline=true;media.preload='auto';media.loop=true;media.onloadeddata=()=>finish();}
+    else media.onload=()=>{if(media.decode)media.decode().then(()=>finish(),()=>finish(Error('Photo decode failed')));else finish();};
+    media.src=item.src;if(video)media.load();
+  });
+}
+async function loadEndingAssets(run){
+  const a=run.assets;if(!a||a.cancelled||a.busy)return;a.busy=true;a.status='loading';
+  const active=()=>direction.ending===run&&!a.cancelled;
+  try{
+    if(!a.config){
+      const controller=new AbortController(),cancel=()=>controller.abort();a.cancelers.add(cancel);
+      const timeout=setTimeout(cancel,20000);let config;
+      try{const r=await fetch('assets/ending.json',{cache:'no-cache',signal:controller.signal});if(!r.ok)throw Error('Ending configuration unavailable');config=await r.json();}
+      finally{clearTimeout(timeout);a.cancelers.delete(cancel);}
+      if(!active())return;
+      const items=config.media||config.photos?.map(src=>({type:'photo',src}));
+      if(!Array.isArray(items)||!items.length||items.some(item=>!item||typeof item.src!=='string'||!['photo','video'].includes(item.type)))throw Error('Ending media missing');
+      a.config=config;a.items=items;a.expected=items.length;a.slots=new Array(items.length).fill(null);
+      run.photoSeconds=Math.max(2,Number(config.photo_seconds)||2.4);run.letterBgm=config.letter_bgm||null;run.easterClips=(config.easter_eggs||[]).filter(src=>typeof src==='string');syncEasterEntry();
+      if(run.previewEaster)startEasterEggs();
+      if(run.media==='letter'){setLetterMusicSource(run.letterBgm);syncLetterMusic();}
+      if(config.bgm){const music=new Audio(config.bgm);music.preload='auto';music.loop=false;music.volume=0;run.music=music;run.musicVolume=Math.max(0,Math.min(1,Number(config.bgm_volume)||.65));music.onended=()=>run.musicFinished=true;music.onerror=()=>{run.musicFailed=true;$('ending-music-resume')?.setAttribute('hidden','');};}
+      if(config.video){run.video=config.video;$('birthday-video').src=config.video;$('birthday-video').load();}
+    }
+    // Bounded requests avoid dozens of competing downloads on mobile networks.
+    const pending=a.items.map((_,i)=>i).filter(i=>!a.slots[i]);let cursor=0;
+    await Promise.all(Array.from({length:Math.min(6,pending.length)},async()=>{
+      while(active()&&cursor<pending.length){
+        const index=pending[cursor++];
+        try{const media=await loadEndingItem(a.items[index],a);if(active())a.slots[index]=media;}catch{/* Keep this exact slot empty for retry, never filter out a memory. */}
+      }
+    }));
+    if(!active())return;
+    if(a.slots.some(media=>!media))throw Error('Some memories are not ready');
+    direction.photos=a.slots.slice();a.status='ready';
+    if(run.previewPhotos)run.start=direction.now-48001;
+  }catch(error){if(active()){a.status='error';a.error=error.message;}}
+  finally{a.busy=false;}
+}
+$('ending-load-retry').onclick=()=>{const run=direction.ending;if(run?.assets?.status==='error'){loadEndingAssets(run);showEndingLoad(run);}};
 function startEnding(){
   clearInteraction();game.scene='ending';game.stage=100;ui.scene.textContent='终章 · 所有路，最后都走向你';ui.objective.textContent='放映我们的故事';ui.play.classList.add('cinematic');
   canvas.classList.remove('photo-album');direction.photos=[];direction.ending={start:direction.now,segment:-1,media:'montage',video:null,videoPlayed:false,photoSeconds:2.4,completed:false};
-  const run=direction.ending;
+  const run=direction.ending;run.assets={status:'loading',expected:0,slots:[],cancelers:new Set(),busy:false,cancelled:false};
   $('cinema-caption').hidden=false;
-  fetch('assets/ending.json').then(r=>r.ok?r.json():{}).then(config=>{
-    if(direction.ending!==run)return;
-    run.photoSeconds=Math.max(2,Number(config.photo_seconds)||2.4);run.letterBgm=config.letter_bgm||null;run.easterClips=(config.easter_eggs||[]).filter(src=>typeof src==='string');syncEasterEntry();
-    if(run.previewEaster)startEasterEggs();
-    if(run.media==='letter'){setLetterMusicSource(run.letterBgm);syncLetterMusic();}
-    if(config.bgm){const music=new Audio(config.bgm);music.preload='auto';music.loop=false;music.volume=0;run.music=music;run.musicVolume=Math.max(0,Math.min(1,Number(config.bgm_volume)||.65));music.onended=()=>run.musicFinished=true;music.onerror=()=>{run.musicFailed=true;$('ending-music-resume')?.setAttribute('hidden','');};}
-    if(config.video){direction.ending.video=config.video;$('birthday-video').src=config.video;$('birthday-video').load();}
-    return Promise.all((config.media||config.photos?.map(src=>({type:'photo',src}))||[]).map(item=>new Promise(resolve=>{
-      if(item.type==='video'){const clip=document.createElement('video');clip.muted=true;clip.playsInline=true;clip.preload='auto';clip.loop=true;clip.onloadeddata=()=>resolve(clip);clip.onerror=()=>resolve(null);clip.src=item.src;clip.load();}
-      else {const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>resolve(null);img.src=item.src;}
-    })));
-  }).then(photos=>{if(direction.ending!==run)return;if(photos)direction.photos=photos.filter(Boolean);if(run.previewPhotos)run.start=direction.now-48001;}).catch(()=>{});
+  loadEndingAssets(run);
   sound('enter');
 }
 function updateEnding(time){
@@ -301,8 +352,10 @@ function updateEnding(time){
       if(elapsed>=48){e.media='blackout';e.blackoutAt=time;$('cinema-caption').textContent='';document.body.classList.add('ending-blackout');muteAmbient();}
     }else if(e.media==='blackout'){
       if(time>=e.blackoutAt+4000){
+        if(e.assets?.status!=='ready'){showEndingLoad(e);syncEndingMusic(e,time);return;}
+        $('ending-load').hidden=true;
         document.body.classList.remove('ending-blackout');document.body.classList.add('ending-rush');
-        canvas.classList.add('photo-album');e.media=direction.photos.length?'photoRush':'birthday';e.rushAt=time;e.birthdayAt=time;
+        canvas.classList.add('photo-album');e.media='photoRush';e.rushAt=time;e.birthdayAt=time;
         const schedule=memorySchedule(direction.photos,e.music?.duration,e.photoSeconds);e.photoBeats=schedule.beats;e.rushSeconds=schedule.duration;e.photoIndex=-1;
       }
     }else if(e.media==='photoRush'){
