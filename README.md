@@ -2,7 +2,15 @@
 
 一个手机优先的像素回忆探索游戏：八个章节、跟随的花生、可重玩的放映室胶片墙，以及约 45 秒的回忆蒙太奇。
 
-## 本地预览
+## 网站发布
+
+- GitHub Pages：`https://HerryHou35.github.io/jenny-memory-adventure/`。
+- Vercel 备用地址：`https://jenny-memory-adventure.vercel.app/`。
+- 用户于 2026-10-18 同意将仓库公开。仓库中的代码、成品照片、视频、信件与历史提交均可被访问和下载；原始 `memory/`、`bgm/`、`彩蛋/` 仍只保留在本机，不额外上传。
+- `.github/workflows/pages.yml` 在 main 更新时自动部署，也可在 Actions 中手动运行。仅发布 `dist/`，不安装依赖、不执行构建脚本、不使用个人访问令牌；官方 Actions 固定到核验过的提交。
+- 项目页位于子路径，图片、媒体和脚本必须保持相对路径。GitHub Pages 与 Vercel 使用不同域名，浏览器存档不会自动互通。国内网络可达性需在实际设备上测试，不保证无代理稳定访问。
+
+## 本地预览方式
 
 直接打开 `dist/index.html`，或在仓库根目录启动任意静态文件服务器并将根目录指向 `dist/`。
 
