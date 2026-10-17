@@ -15,6 +15,7 @@ The game bundles a small number of permissively licensed pixel-art props. They a
 - Pinned commit: `d1e007a9fdf3003c252d2973abe1999ae59aec33`
 - Files used: `CUSHIONED_CHAIR_BACK.png`, `CUSHIONED_CHAIR_FRONT.png`
 - License: MIT, Copyright (c) 2026 Pablo De Lucca.
+- The 19.20 private-cinema room reuses these already bundled chair sprites. The wall panels, velvet curtains, walnut floor, runner, sconces, film tins and light effects are original Canvas drawings, not downloaded cinema backgrounds. Kenney's CC0 Furniture Kit (https://kenney.nl/assets/furniture-kit) was consulted for furniture proportions only; no additional 3D models or raster assets were imported.
 
 ## Kenney asset library
 
