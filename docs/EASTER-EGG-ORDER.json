@@ -1,0 +1,11 @@
+{
+  "total": 4,
+  "order": [
+    { "source": "彩蛋/顺序1.mp4", "url": "assets/easter-eggs/01.mp4", "duration": 36.4 },
+    { "source": "彩蛋/顺序2.mp4", "url": "assets/easter-eggs/02.mp4", "duration": 40.966667 },
+    { "source": "彩蛋/顺序3.mp4", "url": "assets/easter-eggs/03.mp4", "duration": 56.766667 },
+    { "source": "彩蛋/顺序4.mp4", "url": "assets/easter-eggs/04.mp4", "duration": 39.233333 }
+  ],
+  "webVideo": { "codec": "h264", "pixelFormat": "yuv420p", "audio": "original AAC", "faststart": true },
+  "originalsPreserved": true
+}

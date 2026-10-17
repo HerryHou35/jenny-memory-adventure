@@ -33,6 +33,7 @@ h1 span { color:#9be1c5; }
 .controls-help { color:#7c9299; padding-top:12px; }
 .action-button { border:1px solid #fff0c5; border-radius:2px; color:#142e33; background:#f2d58c; font-size:13px; right:18px; bottom:18px; box-shadow:3px 3px 0 #06152099; }
 .dialogue { bottom:14px; left:14px; right:14px; min-height:80px; border:1px solid #e3d3a6; background:#f7ecd2f5; border-radius:3px; font-size:14px; box-shadow:4px 4px 0 #0004; }
+.dialogue,.dialogue * { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
 .speaker-avatar { background:#c5dbca; font-size:27px; }
 .modal { overflow:auto; padding:24px; }
 .modal-card { border:1px solid #c8b996; border-radius:2px; background:#f7ecd5; padding:32px; max-height:calc(100dvh - 48px); overflow:auto; }
@@ -69,6 +70,18 @@ h1 span { color:#9be1c5; }
 .birthday-letter-header button,.birthday-letter-bottom button { cursor:pointer; border:0; border-bottom:1px solid #aebaa4; background:transparent; padding:6px 0; color:#47665b; font-size:11px; }
 .birthday-letter-monogram { margin:50px auto 24px; text-align:center; color:#577866; font:italic 28px Georgia,serif; letter-spacing:.2em; }
 .birthday-letter-monogram span { color:#b8797f; font-size:20px; }
+.birthday-letter-bottom .letter-easter-link { padding:11px 18px; border:1px solid #9eb398; color:#315744; background:#e4ecd8; }
+.easter-screen { position:fixed; z-index:90; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:24px; background:radial-gradient(ellipse at 50% 30%,#183941,#040d16 80%); color:#f5ebd3; }
+.easter-topbar { width:min(1080px,100%); display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.easter-topbar p { margin:0; color:#a5c5b6; font-size:11px; letter-spacing:.12em; }
+.easter-topbar button,.easter-footer button,.easter-done button { border:1px solid #66857a; padding:10px 16px; color:#e7e9d4; background:#17333a; border-radius:3px; cursor:pointer; }
+#easter-video { display:block; width:100%; min-height:0; flex:1; max-height:calc(100dvh - 190px); object-fit:contain; background:#000; }
+.easter-footer { display:flex; align-items:center; justify-content:center; gap:16px; min-height:32px; font-size:12px; color:#acbfb6; }
+.easter-footer p { margin:0; }
+.easter-done { text-align:center; padding:32px 16px; }
+.easter-done .eyebrow { color:#a3ccb3; }.easter-done h2 { margin:22px 0; font:400 clamp(24px,5vw,38px) 'Songti SC','SimSun',serif; line-height:1.7; }
+.easter-done .start-actions { margin-top:32px; }
+@media(max-width:600px) { .easter-screen { padding:16px 12px; gap:12px; }#easter-video { max-height:calc(100dvh - 154px); }.easter-topbar button,.easter-footer button { padding:9px 12px; font-size:11px; }.easter-footer { gap:10px; } }
 .birthday-letter-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:12px; }
 .birthday-letter-reading-controls { position:fixed; z-index:4; bottom:24px; right:max(24px,calc((100vw - 780px)/2 + 28px)); display:flex; gap:8px; }
 .birthday-letter-reading-controls button { border:1px solid #a3b39c; border-radius:20px; padding:10px 16px; color:#365b4e; background:#fff9ecef; box-shadow:0 4px 18px #142c3529; cursor:pointer; font-size:11px; }
@@ -87,6 +100,7 @@ h1 span { color:#9be1c5; }
 .birthday-letter-seal { position:absolute; right:0; bottom:2px; width:40px; height:40px; display:grid; place-items:center; border-radius:50%; border:3px double #b3c4a3; background:#4e715f; color:#e9e7c9; font:italic 23px Georgia,serif; transform:rotate(-12deg); box-shadow:2px 3px 5px #30473324; }
 .birthday-letter-bottom { padding-top:22px; border-top:1px solid #cbd2bc; color:#87917f; font-size:10px; letter-spacing:.06em; }
 body.reading-birthday-letter .dev-jump-toggle,body.reading-birthday-letter .dev-jump-panel { visibility:hidden; }
+body.playing-easter .dev-jump-toggle,body.playing-easter .dev-jump-panel { visibility:hidden; }
 @keyframes letterUnfold { from { opacity:0; transform:translateY(36px) rotate(-.8deg); } to { opacity:1; transform:none; } }
 @media(max-width:600px) { .birthday-letter-screen { padding:20px 12px 32px; }.birthday-letter-paper { padding:28px 28px 26px; }.birthday-letter-paper::before { inset:9px; }.birthday-letter-header { gap:8px; }.birthday-letter-edition { font-size:8px; letter-spacing:.08em; }.birthday-letter-monogram { margin-top:38px; }.birthday-letter-paper h2 { margin-bottom:34px; font-size:25px; }.birthday-letter-body { font-size:16px; line-height:2.15; }.birthday-letter-body .birthday-letter-promise { padding-left:16px; font-size:18px; }.birthday-letter-bottom { flex-direction:column; gap:12px; }.birthday-letter-signature { margin-bottom:38px; } }
 .play-screen.cinematic .hud { opacity:.45; }

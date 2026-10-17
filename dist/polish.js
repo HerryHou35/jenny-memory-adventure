@@ -60,7 +60,7 @@ function toast(copy){$('toast').textContent=copy;$('toast').hidden=false;directi
 function loadCapture(key,data){const img=new Image();img.onload=()=>direction.captureImages[key]=img;img.src=data;}
 function blocked(){return !game.running||game.fade>0||!ui.dialogue.hidden||!ui.letterPanel.hidden||!ui.ringPanel.hidden||!ui.photoControls.hidden||direction.ruler||direction.introUntil>direction.now||game.photoOpen;}
 function currentChapter(){return CHAPTERS.findIndex(c=>c.scene===game.scene);}
-function clearInteraction(){hideBirthdayLetter();stopEndingMusic();document.body.classList.remove('ending-blackout','ending-rush');canvas.classList.remove('photo-album');game.keys.clear();game.nearby=null;game.dialogueQueue=[];game.dialogueCallback=null;game.photoOpen=false;direction.ruler=false;direction.introUntil=0;direction.toastUntil=0;$('chapter-intro').hidden=true;$('toast').hidden=true;$('ruler-controls').hidden=true;ui.dialogue.hidden=true;ui.action.hidden=true;ui.ringPanel.hidden=true;ui.letterPanel.hidden=true;ui.photoControls.hidden=true;player.moving=false;herry.moving=false;peanut.moving=false;}
+function clearInteraction(){stopEasterPlayback();hideBirthdayLetter();stopEndingMusic();document.body.classList.remove('ending-blackout','ending-rush');canvas.classList.remove('photo-album');game.keys.clear();game.nearby=null;game.dialogueQueue=[];game.dialogueCallback=null;game.photoOpen=false;direction.ruler=false;direction.introUntil=0;direction.toastUntil=0;$('chapter-intro').hidden=true;$('toast').hidden=true;$('ruler-controls').hidden=true;ui.dialogue.hidden=true;ui.action.hidden=true;ui.ringPanel.hidden=true;ui.letterPanel.hidden=true;ui.photoControls.hidden=true;player.moving=false;herry.moving=false;peanut.moving=false;}
 function chapterIntro(index){const c=CHAPTERS[index];direction.chapterIndex=index;direction.introUntil=direction.now+(direction.reduced?900:2400);$('intro-number').textContent='A LITTLE MEMORY';$('intro-title').textContent=c.introTitle||c.title;$('intro-place').textContent=c.place;$('chapter-intro').hidden=false;$('chapter-intro').style.animation='none';void $('chapter-intro').offsetWidth;$('chapter-intro').style.animation='';}
 function enterChapter(index){clearInteraction();player.speed=185;CHAPTERS[index].enter();chapterIntro(index);sound('enter');}
 const originalTransition=transitionTo;
@@ -278,7 +278,8 @@ function startEnding(){
   $('cinema-caption').hidden=false;
   fetch('assets/ending.json').then(r=>r.ok?r.json():{}).then(config=>{
     if(direction.ending!==run)return;
-    run.photoSeconds=Math.max(2,Number(config.photo_seconds)||2.4);run.letterBgm=config.letter_bgm||null;
+    run.photoSeconds=Math.max(2,Number(config.photo_seconds)||2.4);run.letterBgm=config.letter_bgm||null;run.easterClips=(config.easter_eggs||[]).filter(src=>typeof src==='string');syncEasterEntry();
+    if(run.previewEaster)startEasterEggs();
     if(run.media==='letter'){setLetterMusicSource(run.letterBgm);syncLetterMusic();}
     if(config.bgm){const music=new Audio(config.bgm);music.preload='auto';music.loop=false;music.volume=0;run.music=music;run.musicVolume=Math.max(0,Math.min(1,Number(config.bgm_volume)||.65));music.onended=()=>run.musicFinished=true;music.onerror=()=>{run.musicFailed=true;$('ending-music-resume')?.setAttribute('hidden','');};}
     if(config.video){direction.ending.video=config.video;$('birthday-video').src=config.video;$('birthday-video').load();}
@@ -319,7 +320,7 @@ function updateEnding(time){
     }
   }
     syncEndingMusic(e,time);
-    if(!['blackout','photoRush','birthday','letter'].includes(e.media))ambient(time);
+    if(!['blackout','photoRush','birthday','letter','easter','easterDone'].includes(e.media))ambient(time);
 }
 let letterWriting=null,letterMusic=null,letterMusicSource=null,letterTextNodes=null,letterMusicPending=false;
 function stopLetterMusic(){if(letterMusic){letterMusic.pause();letterMusic.currentTime=0;}letterMusicPending=false;}
@@ -341,6 +342,7 @@ function finishLetterWriting(){
   writing.done=true;writing.index=writing.nodes.length;
   $('birthday-letter').classList.remove('is-writing');$('letter-show-all').hidden=true;
   document.querySelector('.birthday-letter-signature').hidden=false;document.querySelector('.birthday-letter-bottom').hidden=false;
+  syncEasterEntry();
 }
 function startLetterWriting(){
   stopLetterWriting();const screen=$('birthday-letter'),body=screen.querySelector('.birthday-letter-body');
@@ -350,6 +352,7 @@ function startLetterWriting(){
   letterTextNodes.forEach(part=>{part.node.data='';part.paragraph.hidden=true;part.paragraph.classList.remove('is-current');});
   document.querySelector('.birthday-letter-signature').hidden=true;document.querySelector('.birthday-letter-bottom').hidden=true;
   screen.classList.add('is-writing');$('letter-show-all').hidden=false;$('letter-follow').hidden=true;
+  $('letter-easter-start').hidden=true;
   const writing=letterWriting={nodes:letterTextNodes,index:0,offset:0,elapsed:0,last:0,delay:800,follow:true,done:false,raf:0,musicAge:0};
   const frame=now=>{
     if(letterWriting!==writing||screen.hidden)return;
@@ -387,7 +390,7 @@ function hideBirthdayLetter(){
 function openBirthdayLetter(){
   const e=direction.ending;if(!e||game.scene!=='ending')return;
   e.media='letter';e.letterShown=true;e.completed=true;
-  stopEndingMusic();game.nearby=null;ui.action.hidden=true;$('cinema-caption').hidden=true;
+  stopEndingMusic();pixelMusic.audio.pause();game.nearby=null;ui.action.hidden=true;$('cinema-caption').hidden=true;
   $('birthday-video').pause();$('birthday-video').hidden=true;$('video-resume').hidden=true;
   document.body.classList.remove('ending-blackout','ending-rush');document.body.classList.add('reading-birthday-letter');
   $('game-shell').inert=true;const letter=$('birthday-letter');letter.hidden=false;letter.scrollTop=0;
@@ -412,6 +415,53 @@ $('birthday-letter').addEventListener('keydown',event=>{
     if(event.shiftKey&&(document.activeElement===first||document.activeElement===event.currentTarget.querySelector('article'))){event.preventDefault();last.focus();}
     else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
   }
+});
+const easterPlayback={token:0,index:-1,clips:[],active:false,resumeAfterVisibility:false};
+function syncEasterEntry(){$('letter-easter-start').hidden=!(direction.ending?.easterClips?.length&&letterWriting?.done);}
+function stopEasterPlayback(hide=true){
+  easterPlayback.token++;easterPlayback.active=false;easterPlayback.resumeAfterVisibility=false;
+  const video=$('easter-video');video.pause();video.onended=video.onerror=video.onloadeddata=video.onplay=null;video.removeAttribute('src');video.load();
+  if(hide){$('easter-screen').hidden=true;$('game-shell').inert=false;document.body.classList.remove('playing-easter');}
+}
+function requestEasterPlayback(token=easterPlayback.token){
+  if(token!==easterPlayback.token||!easterPlayback.active)return;
+  const video=$('easter-video');
+  video.play().then(()=>{if(token===easterPlayback.token&&!$('easter-screen').hidden){$('easter-resume').hidden=true;$('easter-status').textContent='';}}).catch(()=>{
+    if(token!==easterPlayback.token||!easterPlayback.active)return;$('easter-resume').hidden=false;$('easter-resume').textContent=video.error?'重试播放':'点击播放';$('easter-status').textContent=video.error?'这段暂时没能加载，可以重试或继续下一段。':'点一下，继续播放这段彩蛋。';
+  });
+}
+function loadEasterClip(index){
+  if(!easterPlayback.active)return;
+  if(index>=easterPlayback.clips.length){
+    stopEasterPlayback(false);direction.ending.media='easterDone';direction.ending.easterSeen=true;$('easter-label').textContent='放映结束';$('easter-video').hidden=true;$('easter-footer').hidden=true;$('easter-done').hidden=false;$('easter-replay').focus({preventScroll:true});return;
+  }
+  const token=++easterPlayback.token,video=$('easter-video');easterPlayback.index=index;easterPlayback.resumeAfterVisibility=false;video.pause();
+  $('easter-label').textContent=`彩蛋 · 第 ${index+1} 段`;$('easter-status').textContent='正在装好这段回忆…';$('easter-resume').hidden=true;$('easter-next').disabled=true;$('easter-next').textContent=index===easterPlayback.clips.length-1?'结束放映':'下一段 →';
+  video.hidden=false;$('easter-footer').hidden=false;$('easter-done').hidden=true;
+  video.onended=()=>{if(token===easterPlayback.token&&easterPlayback.active&&video.ended)loadEasterClip(index+1);};
+  video.onloadeddata=()=>{if(token===easterPlayback.token){$('easter-next').disabled=false;}};
+  video.onplay=()=>{if(token===easterPlayback.token){$('easter-status').textContent='';$('easter-resume').hidden=true;}};
+  video.onerror=()=>{if(token!==easterPlayback.token||!easterPlayback.active)return;$('easter-next').disabled=false;$('easter-resume').hidden=false;$('easter-resume').textContent='重试播放';$('easter-status').textContent='这段暂时没能加载，可以重试或继续下一段。';};
+  video.src=easterPlayback.clips[index];video.load();requestEasterPlayback(token);
+}
+function startEasterEggs(){
+  const e=direction.ending;if(!e?.easterClips?.length)return;
+  stopEasterPlayback();hideBirthdayLetter();stopEndingMusic();pixelMusic.audio.pause();$('birthday-video').pause();$('birthday-video').hidden=true;$('cinema-caption').hidden=true;ui.action.hidden=true;game.nearby=null;
+  e.media='easter';easterPlayback.clips=e.easterClips.slice();easterPlayback.active=true;
+  $('game-shell').inert=true;document.body.classList.remove('ending-blackout','ending-rush');document.body.classList.add('playing-easter');$('easter-screen').hidden=false;
+  $('easter-video').muted=!game.soundOn;loadEasterClip(0);$('easter-back').focus({preventScroll:true});
+}
+function returnFromEasterEggs(){stopEasterPlayback();openBirthdayLetter();finishLetterWriting();$('birthday-letter').scrollTop=$('birthday-letter').scrollHeight;}
+$('letter-easter-start').onclick=startEasterEggs;$('easter-replay').onclick=startEasterEggs;
+$('easter-back').onclick=returnFromEasterEggs;$('easter-letter').onclick=returnFromEasterEggs;
+$('easter-next').onclick=()=>loadEasterClip(easterPlayback.index+1);
+$('easter-resume').onclick=()=>{if($('easter-video').error)$('easter-video').load();requestEasterPlayback();};
+$('easter-screen').addEventListener('keydown',event=>{
+  event.stopPropagation();if(event.key==='Escape'){event.preventDefault();returnFromEasterEggs();}
+  if(event.key==='Tab'){const items=Array.from(event.currentTarget.querySelectorAll('button,video')).filter(el=>!el.disabled&&el.getClientRects().length),first=items[0],last=items[items.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}
+});
+document.addEventListener('visibilitychange',()=>{
+  if(!easterPlayback.active)return;const video=$('easter-video');if(document.hidden){easterPlayback.resumeAfterVisibility=!video.paused;video.pause();}else if(easterPlayback.resumeAfterVisibility){easterPlayback.resumeAfterVisibility=false;requestEasterPlayback();}
 });
   // Readable main-photo holds with a gentle first/last slowdown for a BGM edit.
   // The S curve is a depth trajectory, not a grid of tiny thumbnails.
@@ -576,7 +626,8 @@ if(['localhost','127.0.0.1','[::1]','::1'].includes(location.hostname)||location
     ['KAU · 楼下告别',()=>{setHangdaeStation();setHangdaeRoad();clearInteraction();game.hangdae.lamps.fill(true);player.x=player.tx=855;player.y=player.ty=435;herry.x=782;herry.y=435;peanut.x=720;peanut.y=450;enterDorm();}],
     ['终章 · 旋转蒙太奇',()=>startEnding()],
     ['真人照片 · 漂浮回忆',()=>{startEnding();direction.ending.previewPhotos=true;}],
-    ['终章 · Herry 的信',()=>{startEnding();openBirthdayLetter();}]
+    ['终章 · Herry 的信',()=>{startEnding();openBirthdayLetter();}],
+    ['终章 · 最后的彩蛋',()=>{startEnding();direction.ending.previewEaster=true;}]
   ];
   for(const [label,setup]of scenes){const button=document.createElement('button');button.type='button';button.textContent=label;grid.append(button);button.onclick=()=>{
     if(!images.jenny||!images.herry||!images.peanut){note.textContent='角色素材还在加载，稍等一下再跳转。';return;}

@@ -4,6 +4,12 @@
   "bgm": "assets/birthday-bgm.ogg",
   "bgm_volume": 0.65,
   "letter_bgm": "assets/letter-bgm.mp3",
+  "easter_eggs": [
+    "assets/easter-eggs/01.mp4",
+    "assets/easter-eggs/02.mp4",
+    "assets/easter-eggs/03.mp4",
+    "assets/easter-eggs/04.mp4"
+  ],
   "photos": [
     "assets/memories/album/1/001.webp",
     "assets/memories/album/1/002.webp",

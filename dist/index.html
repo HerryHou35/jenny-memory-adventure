@@ -7,7 +7,7 @@
   <meta name="description" content="苏雨菲的像素回忆冒险。" />
   <title>花生带你回到那一天</title>
   <link rel="stylesheet" href="styles.css?v=19" />
-  <link rel="stylesheet" href="polish.css?v=19.18" />
+  <link rel="stylesheet" href="polish.css?v=19.19" />
 </head>
 <body>
   <main id="game-shell">
@@ -137,12 +137,19 @@
         <b>Herry</b>
         <span class="birthday-letter-seal" aria-hidden="true">H</span>
       </footer>
-      <div class="birthday-letter-bottom"><span>首尔 · 深圳 · 以后每一天</span><button id="birthday-letter-home" type="button">回放映室，再看一次</button></div>
+      <div class="birthday-letter-bottom"><span>首尔 · 深圳 · 以后每一天</span><button id="letter-easter-start" class="letter-easter-link" type="button" hidden>还有一个彩蛋 →</button><button id="birthday-letter-home" type="button">回放映室，再看一次</button></div>
     </article>
     <div class="birthday-letter-reading-controls"><button id="letter-follow" type="button" hidden>↓ 跟随书写</button><button id="letter-show-all" type="button">直接看完整封信</button></div>
   </section>
 
-  <script src="app.js?v=19.18"></script>
-  <script src="polish.js?v=19.18"></script>
+  <section id="easter-screen" class="easter-screen" hidden role="dialog" aria-modal="true" aria-label="最后的彩蛋">
+    <header class="easter-topbar"><p id="easter-label">还有一点，想给你看</p><button id="easter-back" type="button">回到信笺</button></header>
+    <video id="easter-video" controls playsinline preload="metadata" aria-label="彩蛋视频"></video>
+    <div id="easter-footer" class="easter-footer"><p id="easter-status" role="status"></p><button id="easter-resume" type="button" hidden>点击播放</button><button id="easter-next" type="button">下一段 →</button></div>
+    <div id="easter-done" class="easter-done" hidden><p class="eyebrow">AND THE STORY GOES ON</p><h2>宝宝，生日快乐。<br />我们的故事，还在继续。</h2><div class="start-actions"><button id="easter-replay" type="button">再看一次彩蛋</button><button id="easter-letter" type="button">回到这封信</button></div></div>
+  </section>
+
+  <script src="app.js?v=19.19"></script>
+  <script src="polish.js?v=19.19"></script>
 </body>
 </html>

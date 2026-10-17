@@ -63,6 +63,10 @@ function updateObjective() {
 
 function dailyFoundCount(){if(!game.daily)return 0;return [game.daily.lottery,game.daily.hair,game.daily.icecream,game.daily.kitty].filter(Boolean).length;}
 
+function clearDialogueSelection(){const selection=window.getSelection();if(selection&&(ui.dialogue.contains(selection.anchorNode)||ui.dialogue.contains(selection.focusNode)))selection.removeAllRanges();}
+ui.dialogue.addEventListener('pointerdown',event=>{if(event.button===0)event.preventDefault();clearDialogueSelection();});
+ui.dialogue.addEventListener('selectstart',event=>event.preventDefault());
+
 function say(name, text, avatar = "🐶", callback) {
   game.nearby=null;ui.action.hidden=true;
   const scope=`${game.scene}:${game.stage}`,same=line=>line&&line.scope===scope&&line.name===name&&line.text===text;
@@ -71,8 +75,8 @@ function say(name, text, avatar = "🐶", callback) {
   game.dialogueQueue.push({ name, text, avatar, callback, scope });if(ui.dialogue.hidden)showNextDialogue();
 }
 function sayMany(lines, callback) { lines.forEach((line, index) => say(line[0], line[1], line[2], index === lines.length - 1 ? callback : null)); }
-function showNextDialogue() { const next = game.dialogueQueue.shift();game.activeDialogue=next||null;if (!next) { ui.dialogue.hidden = true;game.dialogueCallback=null;return; } ui.speaker.textContent = next.name; ui.dialogueText.textContent = next.text; ui.avatar.textContent = next.avatar; ui.dialogue.hidden = false;game.nearby=null;ui.action.hidden=true;game.dialogueCallback=next.callback||null; }
-function advanceDialogue() { if (ui.dialogue.hidden) return; const callback=game.dialogueCallback;game.dialogueCallback=null;game.activeDialogue=null;ui.dialogue.hidden=true;if(callback)callback();if(ui.dialogue.hidden)showNextDialogue(); }
+function showNextDialogue() { clearDialogueSelection();const next = game.dialogueQueue.shift();game.activeDialogue=next||null;if (!next) { ui.dialogue.hidden = true;game.dialogueCallback=null;return; } ui.speaker.textContent = next.name; ui.dialogueText.textContent = next.text; ui.avatar.textContent = next.avatar; ui.dialogue.hidden = false;game.nearby=null;ui.action.hidden=true;game.dialogueCallback=next.callback||null; }
+function advanceDialogue() { clearDialogueSelection();if (ui.dialogue.hidden) return; const callback=game.dialogueCallback;game.dialogueCallback=null;game.activeDialogue=null;ui.dialogue.hidden=true;if(callback)callback();if(ui.dialogue.hidden)showNextDialogue(); }
 function performNearbyAction(){if(!game.running||ui.action.hidden||!ui.dialogue.hidden||game.fade>0||game.photoOpen||!ui.ringPanel.hidden||!ui.letterPanel.hidden||!ui.photoControls.hidden||typeof blocked==='function'&&blocked())return;const action=game.nearby?.action;if(!action)return;game.nearby=null;ui.action.hidden=true;action();}
 
 function worldPoint(event) { const rect = canvas.getBoundingClientRect(); return { x: (event.clientX - rect.left) * 960 / rect.width, y: (event.clientY - rect.top) * 540 / rect.height }; }
