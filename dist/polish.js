@@ -278,7 +278,7 @@ function startEnding(){
   $('cinema-caption').hidden=false;
   fetch('assets/ending.json').then(r=>r.ok?r.json():{}).then(config=>{
     if(direction.ending!==run)return;
-    run.photoSeconds=Math.max(2,Number(config.photo_seconds)||2.4);
+    run.photoSeconds=Math.max(2,Number(config.photo_seconds)||2.4);run.letterBgm=config.letter_bgm||null;
     if(config.bgm){const music=new Audio(config.bgm);music.preload='auto';music.loop=false;music.volume=0;run.music=music;run.musicVolume=Math.max(0,Math.min(1,Number(config.bgm_volume)||.65));music.onended=()=>run.musicFinished=true;music.onerror=()=>{run.musicFailed=true;$('ending-music-resume')?.setAttribute('hidden','');};}
     if(config.video){direction.ending.video=config.video;$('birthday-video').src=config.video;$('birthday-video').load();}
     return Promise.all((config.media||config.photos?.map(src=>({type:'photo',src}))||[]).map(item=>new Promise(resolve=>{
@@ -320,7 +320,65 @@ function updateEnding(time){
     syncEndingMusic(e,time);
     if(!['blackout','photoRush','birthday','letter'].includes(e.media))ambient(time);
 }
+let letterWriting=null,letterMusic=null,letterMusicSource=null,letterTextNodes=null,letterMusicPending=false;
+function stopLetterMusic(){if(letterMusic){letterMusic.pause();letterMusic.currentTime=0;}letterMusicPending=false;}
+function syncLetterMusic(){
+  const button=$('letter-music-toggle');
+  if(!letterMusicSource){button.hidden=true;return;}
+  button.hidden=false;
+  if($('birthday-letter').hidden||document.hidden||!game.soundOn){letterMusic?.pause();button.textContent='♪ 播放晴天';return;}
+  if(!letterMusic){letterMusic=new Audio(letterMusicSource);letterMusic.loop=true;letterMusic.preload='auto';letterMusic.volume=0;letterMusic.onerror=()=>{button.textContent='配乐加载失败 · 点击重试';};}
+  if(letterMusic.paused&&!letterMusicPending){const active=letterMusic;letterMusicPending=true;
+    active.play().then(()=>{if(active!==letterMusic)return;letterMusicPending=false;if($('birthday-letter').hidden||document.hidden||!game.soundOn){active.pause();return;}button.textContent='♪ 静音';}).catch(()=>{if(active!==letterMusic)return;letterMusicPending=false;button.textContent='♪ 播放晴天';});
+  }
+}
+function stopLetterWriting(){if(letterWriting)cancelAnimationFrame(letterWriting.raf);letterWriting=null;$('birthday-letter').classList.remove('is-writing');}
+function finishLetterWriting(){
+  const writing=letterWriting;if(!writing)return;
+  writing.nodes.forEach(part=>{part.node.data=part.text;part.paragraph.hidden=false;part.paragraph.classList.remove('is-current');});
+  writing.done=true;writing.index=writing.nodes.length;
+  $('birthday-letter').classList.remove('is-writing');$('letter-show-all').hidden=true;
+  document.querySelector('.birthday-letter-signature').hidden=false;document.querySelector('.birthday-letter-bottom').hidden=false;
+}
+function startLetterWriting(){
+  stopLetterWriting();const screen=$('birthday-letter'),body=screen.querySelector('.birthday-letter-body');
+  if(!letterTextNodes){const walker=document.createTreeWalker(body,NodeFilter.SHOW_TEXT);letterTextNodes=[];let node;
+    while(node=walker.nextNode())if(node.data.trim())letterTextNodes.push({node,text:node.data,chars:Array.from(node.data),paragraph:node.parentElement.closest('p')});
+  }
+  letterTextNodes.forEach(part=>{part.node.data='';part.paragraph.hidden=true;part.paragraph.classList.remove('is-current');});
+  document.querySelector('.birthday-letter-signature').hidden=true;document.querySelector('.birthday-letter-bottom').hidden=true;
+  screen.classList.add('is-writing');$('letter-show-all').hidden=false;$('letter-follow').hidden=true;
+  const writing=letterWriting={nodes:letterTextNodes,index:0,offset:0,elapsed:0,last:0,delay:800,follow:true,done:false,raf:0,musicAge:0};
+  const frame=now=>{
+    if(letterWriting!==writing||screen.hidden)return;
+    const dt=writing.last?Math.min(80,Math.max(0,now-writing.last)):0;writing.last=now;
+    if(!document.hidden){writing.elapsed+=dt;writing.musicAge+=dt;
+      if(!writing.done&&writing.elapsed>=writing.delay){
+        writing.elapsed=0;const part=writing.nodes[writing.index];part.paragraph.hidden=false;part.paragraph.classList.add('is-current');
+        const character=part.chars[writing.offset++];part.node.data+=character;
+        writing.delay=/[，。！？,.!?]/.test(character)?280:character===' '?55:110;
+        if(writing.offset===part.chars.length){const next=writing.nodes[writing.index+1];writing.index++;writing.offset=0;if(!next)finishLetterWriting();else if(next.paragraph!==part.paragraph){part.paragraph.classList.remove('is-current');writing.delay=650;}}
+      }
+      if(writing.follow){const last=writing.done?screen.querySelector('.birthday-letter-signature'):writing.nodes[Math.min(writing.index,writing.nodes.length-1)]?.paragraph;
+        if(last&&!last.hidden){const overflow=last.getBoundingClientRect().bottom-(innerHeight-110);if(overflow>0)screen.scrollTop+=Math.max(1,overflow*.14);}
+      }
+      if(letterMusic&&!letterMusic.paused)letterMusic.volume=.45*Math.min(1,writing.musicAge/1500);
+    }
+    writing.raf=requestAnimationFrame(frame);
+  };
+  writing.raf=requestAnimationFrame(frame);
+}
+function pauseLetterFollow(){if(letterWriting&&!letterWriting.done){letterWriting.follow=false;$('letter-follow').hidden=false;}}
+$('letter-follow').onclick=()=>{if(letterWriting){letterWriting.follow=true;$('letter-follow').hidden=true;}};
+$('letter-show-all').onclick=finishLetterWriting;
+$('letter-music-toggle').onclick=()=>{game.soundOn=letterMusic?.paused!==false;syncLetterMusic();};
+document.addEventListener('visibilitychange',syncLetterMusic);
+$('birthday-letter').addEventListener('wheel',event=>{if(event.deltaY<0)pauseLetterFollow();},{passive:true});
+let letterTouchY=0;
+$('birthday-letter').addEventListener('touchstart',event=>{letterTouchY=event.touches[0]?.clientY||0;},{passive:true});
+$('birthday-letter').addEventListener('touchmove',event=>{if((event.touches[0]?.clientY||0)>letterTouchY+5)pauseLetterFollow();},{passive:true});
 function hideBirthdayLetter(){
+  stopLetterWriting();stopLetterMusic();
   $('birthday-letter').hidden=true;document.body.classList.remove('reading-birthday-letter');
   if($('game-shell').inert)$('game-shell').inert=false;
 }
@@ -332,6 +390,8 @@ function openBirthdayLetter(){
   document.body.classList.remove('ending-blackout','ending-rush');document.body.classList.add('reading-birthday-letter');
   $('game-shell').inert=true;const letter=$('birthday-letter');letter.hidden=false;letter.scrollTop=0;
   letter.querySelector('article').focus({preventScroll:true});
+  const source=e.letterBgm||null;if(source!==letterMusicSource){stopLetterMusic();letterMusic=null;letterMusicSource=source;}
+  startLetterWriting();syncLetterMusic();
 }
 $('birthday-letter-close').onclick=()=>{
   hideBirthdayLetter();const e=direction.ending;if(e){e.media='birthday';$('cinema-caption').hidden=false;}
@@ -343,9 +403,10 @@ $('birthday-letter-home').onclick=()=>{
 };
 $('birthday-letter').addEventListener('keydown',event=>{
   event.stopPropagation();
+  if(['ArrowUp','PageUp','Home'].includes(event.key))pauseLetterFollow();
   if(event.key==='Escape'){event.preventDefault();$('birthday-letter-close').click();return;}
   if(event.key==='Tab'){
-    const first=$('birthday-letter-close'),last=$('birthday-letter-home');
+    const buttons=Array.from(event.currentTarget.querySelectorAll('button')).filter(button=>!button.hidden&&button.getClientRects().length),first=buttons[0],last=buttons[buttons.length-1];
     if(event.shiftKey&&(document.activeElement===first||document.activeElement===event.currentTarget.querySelector('article'))){event.preventDefault();last.focus();}
     else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
   }

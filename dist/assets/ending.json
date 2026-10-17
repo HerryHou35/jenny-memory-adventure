@@ -3,6 +3,7 @@
   "photo_seconds": 2.4,
   "bgm": "assets/birthday-bgm.ogg",
   "bgm_volume": 0.65,
+  "letter_bgm": null,
   "photos": [
     "assets/memories/album/1/001.webp",
     "assets/memories/album/1/002.webp",

@@ -1,0 +1,37 @@
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
+const {chromium}=require('C:/Users/18731/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const root=path.resolve(__dirname,'../dist');
+const server=http.createServer((req,res)=>{const file=path.join(root,decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\/$/,'/index.html'));if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}fs.readFile(file,(err,data)=>{if(err){res.writeHead(404).end();return;}res.setHeader('Content-Type',({'.svg':'image/svg+xml','.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.webp':'image/webp','.json':'application/json','.ogg':'audio/ogg'}[path.extname(file)])||'application/octet-stream');res.end(data);});});
+(async()=>{await new Promise(r=>server.listen(4177,'127.0.0.1',r));let browser;try{
+ browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
+ const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://127.0.0.1:4177/?version=19.17');await page.waitForFunction(()=>Object.keys(images).length===Object.keys(imagePaths).length);await page.clock.install();
+ const original=await page.evaluate(()=>{
+   window.letterOriginal=document.querySelector('.birthday-letter-body').textContent;
+   game.scene='ending';game.running=true;direction.ending={media:'birthday',birthdayAt:0,start:0};openBirthdayLetter();
+   return window.letterOriginal;
+ });
+ const assert=(v,m)=>{if(!v)throw Error(m);};
+ assert(await page.evaluate(()=>document.querySelector('.birthday-letter-body').textContent.trim()===''&&document.querySelector('.birthday-letter-signature').hidden),'future words or signature visible');
+ await page.clock.runFor(1050);
+ const early=await page.evaluate(()=>document.querySelector('.birthday-letter-body').textContent.trim());assert(early.length>=1&&early.length<=5,'not one character at a time');
+ await page.clock.runFor(35000);assert(await page.evaluate(()=>$('birthday-letter').scrollTop>80),'automatic scroll did not follow');
+ fs.mkdirSync(path.resolve(__dirname,'../.sites-runtime/qa'),{recursive:true});await page.screenshot({path:path.resolve(__dirname,'../.sites-runtime/qa/19-17-letter-writing.png')});
+ await page.locator('#birthday-letter').dispatchEvent('wheel',{deltaY:-100});await page.evaluate(()=>$('birthday-letter').scrollTop=0);await page.clock.runFor(3000);
+ assert(await page.evaluate(()=>$('birthday-letter').scrollTop===0&&!$('letter-follow').hidden),'manual scroll was overridden');
+ await page.locator('#letter-follow').click();await page.clock.runFor(1500);assert(await page.evaluate(()=>$('birthday-letter').scrollTop>80),'resume-follow failed');
+ await page.locator('#letter-show-all').click();assert(await page.evaluate(()=>document.querySelector('.birthday-letter-body').textContent)===original,'skip lost or changed text');
+ assert(await page.evaluate(()=>!document.querySelector('.birthday-letter-signature').hidden),'signature missing after completion');
+ await page.evaluate(()=>{hideBirthdayLetter();openBirthdayLetter();});await page.clock.runFor(1200);assert(await page.evaluate(()=>document.querySelector('.birthday-letter-body').textContent.trim().length<10),'reopen did not restart');
+ await page.evaluate(()=>{hideBirthdayLetter();});const closed=await page.evaluate(()=>document.querySelector('.birthday-letter-body').textContent);await page.clock.runFor(3000);assert(await page.evaluate(()=>document.querySelector('.birthday-letter-body').textContent)===closed,'typing continued while closed');
+ const music=await page.evaluate(async()=>{
+   const NativeAudio=window.Audio;let plays=0,pauses=0;
+   window.Audio=function(src){return {src,paused:true,currentTime:0,volume:0,play(){plays++;this.paused=false;return Promise.resolve();},pause(){pauses++;this.paused=true;}};};
+   direction.ending.letterBgm='assets/letter-bgm.ogg';game.soundOn=true;openBirthdayLetter();await Promise.resolve();
+   const started=letterMusic.src==='assets/letter-bgm.ogg'&&!letterMusic.paused;
+   $('letter-music-toggle').click();const muted=letterMusic.paused;$('letter-music-toggle').click();await Promise.resolve();
+   const resumed=!letterMusic.paused;hideBirthdayLetter();const stopped=letterMusic.paused&&letterMusic.currentTime===0;
+   window.Audio=NativeAudio;return {started,muted,resumed,stopped,plays,pauses};
+ });assert(music.started&&music.muted&&music.resumed&&music.stopped,'letter music lifecycle failed');
+ assert(!errors.length,errors.join('\n'));console.log(JSON.stringify({passed:true,typing:true,autoScroll:true,manualScroll:true,reopen:true,textPreserved:true,music}));
+}finally{if(browser)await browser.close();await new Promise(r=>server.close(r));}})().catch(e=>{console.error(e);process.exitCode=1;});

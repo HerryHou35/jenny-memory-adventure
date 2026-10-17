@@ -7,7 +7,7 @@
   <meta name="description" content="苏雨菲的像素回忆冒险。" />
   <title>花生带你回到那一天</title>
   <link rel="stylesheet" href="styles.css?v=19" />
-  <link rel="stylesheet" href="polish.css?v=19.16" />
+  <link rel="stylesheet" href="polish.css?v=19.17" />
 </head>
 <body>
   <main id="game-shell">
@@ -116,7 +116,7 @@
     <article class="birthday-letter-paper" tabindex="-1">
       <header class="birthday-letter-header">
         <span class="birthday-letter-edition">OCTOBER 25 · FOR JENNY</span>
-        <button id="birthday-letter-close" type="button">收好这封信 <span aria-hidden="true">↗</span></button>
+        <div class="birthday-letter-actions"><button id="letter-music-toggle" type="button" hidden>♪ 播放晴天</button><button id="birthday-letter-close" type="button">收好这封信 <span aria-hidden="true">↗</span></button></div>
       </header>
       <div class="birthday-letter-monogram" aria-hidden="true">H <span>♡</span> J</div>
       <p class="birthday-letter-kicker">一封慢慢走到你面前的信</p>
@@ -139,9 +139,10 @@
       </footer>
       <div class="birthday-letter-bottom"><span>首尔 · 深圳 · 以后每一天</span><button id="birthday-letter-home" type="button">回放映室，再看一次</button></div>
     </article>
+    <div class="birthday-letter-reading-controls"><button id="letter-follow" type="button" hidden>↓ 跟随书写</button><button id="letter-show-all" type="button">直接看完整封信</button></div>
   </section>
 
-  <script src="app.js?v=19.16"></script>
-  <script src="polish.js?v=19.16"></script>
+  <script src="app.js?v=19.17"></script>
+  <script src="polish.js?v=19.17"></script>
 </body>
 </html>

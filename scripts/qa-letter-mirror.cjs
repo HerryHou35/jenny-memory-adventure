@@ -28,10 +28,11 @@ const server=http.createServer((req,res)=>{const name=decodeURIComponent(new URL
   startEnding();direction.ending.media='birthday';direction.ending.birthdayAt=1000;direction.ending.start=0;updateEnding(8201);
   assert(!$('birthday-letter').hidden&&direction.ending.media==='letter','ending did not open letter');
   assert($('game-shell').inert,'background not inert');
+  finishLetterWriting();
   const text=$('birthday-letter').textContent;for(const copy of ['第198天','我不想让别人代替我 不然我会吃醋','每一次都会让我潸然泪下','等我回来 我们会越来越幸福的','写于 October 15th 12:42 AM','Herry'])assert(text.includes(copy),'missing letter text '+copy);
   assert($('birthday-letter').querySelectorAll('.birthday-letter-body p').length===9,'letter paragraphs');
   $('birthday-letter-close').click();updateEnding(8300);assert($('birthday-letter').hidden&&ui.action.textContent==='再读一次 Herry 的信','letter cannot be collected');
-  game.nearby.action();assert(!$('birthday-letter').hidden,'letter cannot be reopened');
+  game.nearby.action();finishLetterWriting();assert(!$('birthday-letter').hidden,'letter cannot be reopened');
   return {mirror:true,price:true,letter:true,reopen:true};
  });
  await page.waitForTimeout(1300);await page.screenshot({path:path.join(out,'19-15-letter-desktop.png')});
