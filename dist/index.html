@@ -6,8 +6,9 @@
   <meta name="theme-color" content="#071b26" />
   <meta name="description" content="苏雨菲的像素回忆冒险。" />
   <title>花生带你回到那一天</title>
-  <link rel="stylesheet" href="styles.css?v=19" />
-  <link rel="stylesheet" href="polish.css?v=19.21" />
+  <meta name="jenny-release" content="19.22" />
+  <link rel="stylesheet" href="styles.css?v=19.22" />
+  <link rel="stylesheet" href="polish.css?v=19.22" />
 </head>
 <body>
   <main id="game-shell">
@@ -22,6 +23,8 @@
           <button id="start-button" class="primary">进入放映室</button>
           <button id="continue-button" class="secondary" hidden>继续上次进度</button>
         </div>
+        <button id="prepare-open" class="text-button prepare-open" type="button">提前准备全部素材</button>
+        <small id="prepare-summary" aria-live="polite">正式播放前，先把完整回忆存到这台设备。</small>
         <small>点击地面移动 · 靠近物品后进行互动</small>
       </div>
     </section>
@@ -155,8 +158,20 @@
     <div id="easter-done" class="easter-done" hidden><p class="eyebrow">AND THE STORY GOES ON</p><h2>宝宝，生日快乐。<br />我们的故事，还在继续。</h2><div class="start-actions"><button id="easter-replay" type="button">再看一次彩蛋</button><button id="easter-letter" type="button">回到这封信</button></div></div>
   </section>
 
-  <script src="app.js?v=19.21"></script>
-  <script src="polish.js?v=19.21"></script>
-  <script src="cinema.js?v=19.21"></script>
+  <section id="prepare-panel" class="prepare-panel" hidden role="dialog" aria-modal="true" aria-labelledby="prepare-title">
+    <div class="prepare-card">
+      <p class="eyebrow">BEFORE OUR LITTLE ADVENTURE</p>
+      <h2 id="prepare-title">先把回忆，好好装进来。</h2>
+      <p id="prepare-status" role="status">准备完整素材后再开始，不会跳过任何照片。</p>
+      <progress id="prepare-progress" max="1" value="0" aria-label="完整素材准备进度"></progress>
+      <p id="prepare-detail"></p>
+      <p class="prepare-note">包含全部照片、视频、音乐和游戏资源。建议连接 Wi‑Fi，保持此页面打开。缓存仅保存在当前浏览器；无痕模式、清理浏览数据或系统回收空间可能使其失效。</p>
+      <div class="start-actions"><button id="prepare-download" class="primary" type="button">开始准备全部素材</button><button id="prepare-play" class="primary" type="button" hidden>准备好了，开始</button><button id="prepare-close" class="secondary" type="button">返回首页</button></div>
+    </div>
+  </section>
+  <script src="prepare.js?v=19.22"></script>
+  <script src="app.js?v=19.22"></script>
+  <script src="polish.js?v=19.22"></script>
+  <script src="cinema.js?v=19.22"></script>
 </body>
 </html>

@@ -1,0 +1,2 @@
+# Cached integrity hashes must describe the exact deployed bytes on every OS.
+dist/** -text

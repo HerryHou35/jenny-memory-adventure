@@ -170,5 +170,14 @@ body.ending-rush .hud,body.ending-rush .controls-help { visibility:hidden; }
 .ending-load p + p { color:#96aaa3; font-size:clamp(11px,1.3vw,14px); }
 .ending-load progress { width:min(250px,70%); height:4px; accent-color:#a9d4c3; }
 .ending-load button { padding:10px 16px; border:1px solid #8aac9d; border-radius:4px; background:#18342d; color:#eee9d6; cursor:pointer; }
+.prepare-open { margin-top:12px; }
+.prepare-panel { position:fixed; inset:0; z-index:150; display:grid; place-items:center; padding:20px; background:#06171deF; overflow:auto; }
+.prepare-panel[hidden] { display:none; }
+.prepare-card { width:min(580px,100%); padding:clamp(22px,5vw,42px); box-sizing:border-box; background:#112e34; border:1px solid #779d8e; border-radius:12px; color:#f1ead4; box-shadow:0 25px 100px #0008; }
+.prepare-card h2 { font-size:clamp(23px,4vw,32px); line-height:1.5; margin:12px 0 20px; }
+.prepare-card p { line-height:1.8; }
+.prepare-card progress { display:block; width:100%; height:10px; margin:18px 0 8px; accent-color:#a2d6bc; }
+.prepare-note,#prepare-detail { font-size:12px; color:#bbccc1; }
+.prepare-card .start-actions { margin-top:24px; flex-wrap:wrap; }
 .dev-jump-toggle { top:56px; }
 .dev-jump-panel { top:100px; max-height:calc(100dvh - 120px); }

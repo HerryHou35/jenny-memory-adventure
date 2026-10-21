@@ -22,7 +22,8 @@ const assert=(value,message)=>{if(!value)throw Error(message);};
     let releaseConfig;const configGate=new Promise(r=>releaseConfig=r);
     await page.route('**/assets/ending.json',async route=>{await configGate;await route.continue();});
     await page.goto('http://127.0.0.1:4182/');await page.waitForFunction(()=>Object.keys(images).length===Object.keys(imagePaths).length);
-    await page.locator('#start-button').click();
+    // Isolate the defensive ending gate; the earlier entry gate is tested in qa-prepare.
+    await page.evaluate(()=>startGame(false));
     await page.evaluate(()=>{clearInteraction();game.fade=0;game.soundOn=false;startEnding();game.running=false;const e=direction.ending;e.start=direction.now-48001;updateEnding(direction.now);e.blackoutAt=direction.now-3999;updateEnding(direction.now);});
     assert(await page.evaluate(()=>direction.ending.media==='blackout'),'four-second blackout changed');
     const blocked=await page.evaluate(()=>{const e=direction.ending;e.blackoutAt=direction.now-4100;updateEnding(direction.now);drawEnding(direction.now);return {phase:e.media,photos:direction.photos.length,letter:!$('birthday-letter').hidden};});

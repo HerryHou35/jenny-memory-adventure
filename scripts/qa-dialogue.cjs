@@ -4,7 +4,7 @@ const {chromium}=require('C:/Users/18731/.cache/codex-runtimes/codex-primary-run
  try{
   const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:4173/?version=19.12');await page.waitForFunction(()=>images.jenny&&images.herry&&images.peanut);
-  await page.locator('#start-button').click();
+  await require("./qa-prepare-helper.cjs")(page);await page.locator('#start-button').click();await page.waitForFunction(()=>game.running);
   const result=await page.evaluate(()=>{
     const check=(v,m)=>{if(!v)throw Error(m);};
     while(!ui.dialogue.hidden)advanceDialogue();

@@ -9,7 +9,7 @@ const server=http.createServer((req,res)=>{const name=decodeURIComponent(new URL
     const page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];
     page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);});
     await page.goto('http://127.0.0.1:4179/');await page.waitForFunction(()=>Object.keys(images).length===Object.keys(imagePaths).length);
-    await page.locator('#start-button').click();
+    await require("./qa-prepare-helper.cjs")(page);await page.locator('#start-button').click();await page.waitForFunction(()=>game.running);
     await page.evaluate(()=>{clearInteraction();game.fade=0;});
     await page.locator('#game-canvas').screenshot({path:path.join(out,'19-20-cinema-dark.png')});
     const baseline=await page.evaluate(()=>({stage:game.stage,films:CHAPTERS.filter(c=>game[c.key]).length}));

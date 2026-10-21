@@ -15,7 +15,7 @@ const server=http.createServer((req,res)=>{
  browser=await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
  const page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];page.on('pageerror',e=>errors.push(e.message));const assert=(v,m)=>{if(!v)throw Error(m);};
  await page.goto('http://127.0.0.1:4178/?version=19.19');await page.waitForFunction(()=>Object.keys(images).length===Object.keys(imagePaths).length);
- await page.locator('#start-button').click();await page.evaluate(()=>{direction.devPreview=true;clearInteraction();for(let i=0;i<12;i++)say('花生','连续点击检查 '+i);});
+ await require("./qa-prepare-helper.cjs")(page);await page.locator('#start-button').click();await page.waitForFunction(()=>game.running);await page.evaluate(()=>{direction.devPreview=true;clearInteraction();for(let i=0;i<12;i++)say('花生','连续点击检查 '+i);});
  await page.locator('#dialogue-text').click({clickCount:3});assert(await page.evaluate(()=>!getSelection().toString()&&getComputedStyle(ui.dialogueText).userSelect==='none'),'rapid clicks selected dialogue');
  assert(await page.evaluate(()=>{const range=document.createRange();range.selectNodeContents(ui.dialogueText);const s=getSelection();s.removeAllRanges();s.addRange(range);advanceDialogue();return s.rangeCount===0;}),'stale selection survived next line');
  await page.locator('#dev-jump-toggle').click();await page.getByRole('button',{name:'终章 · Herry 的信',exact:true}).click();await page.waitForFunction(()=>direction.ending.easterClips?.length===4);

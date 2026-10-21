@@ -6,7 +6,7 @@ const {chromium}=require('C:/Users/18731/.cache/codex-runtimes/codex-primary-run
   await page.goto('http://127.0.0.1:4173/?version=19.11');
   await page.waitForFunction(()=>images.jenny&&images.herry&&images.peanut);
   if(!await page.evaluate(()=>pixelMusic.audio.paused))throw Error('cover autoplay');
-  await page.locator('#start-button').click();
+  await require("./qa-prepare-helper.cjs")(page);await page.locator('#start-button').click();await page.waitForFunction(()=>game.running);
   if(await page.locator('#pixel-music-resume').isVisible())await page.locator('#pixel-music-resume').click();
   await page.waitForFunction(()=>pixelMusic.audio.currentTime>.3&&!pixelMusic.audio.paused);
   const duration=await page.evaluate(()=>pixelMusic.audio.duration);
